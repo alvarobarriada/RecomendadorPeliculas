@@ -9,28 +9,32 @@ class MyWindow(QtWidgets.QMainWindow):
         super(MyWindow,self).__init__()
 
         #Iniciamos la primera ventana
-        uic.loadUi('pantalla_principal.ui',self)      
-        qtRectangle = self.frameGeometry()
+        uic.loadUi('main.ui',self)      
+        """qtRectangle = self.frameGeometry()
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         qtRectangle.moveCenter(centerPoint)
-        self.move(qtRectangle.topLeft())
+        self.move(qtRectangle.topLeft())"""
 
 
-        #Controladores de botones
-
-        #Boton importar de Youtube
-        #self.btnImportar.clicked.connect(self.insertarVideoYoutube)
+        #Boton recomendar
+        self.btnRecomendar.clicked.connect(self.recomendar)
         
-        ## Botón siguiente (de 1ª a 2ª ventana)
-        #self.btnSiguiente1.setEnabled(False)
+        ## Botón predecir
+        self.btnPredecir.clicked.connect(self.predecir)
         
     # Abrir cuadro de diálogo
     def openDialogBox(self):
         filename = QtWidgets.QFileDialog.getOpenFileName()
         return filename
+    
+    def recomendar(self):
+        pass
+    
+    def predecir(self):
+        pass
 
     #------------ Funciones Botones Segunda Ventana ------------#
-"""
+    """
     #Cambiar a segunda pantalla
     def cambiarSegundaVentana(self):
         #Cargamos la segunda ventana
@@ -39,8 +43,8 @@ class MyWindow(QtWidgets.QMainWindow):
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())
-
-"""
+    """
+    
     #Guarda los cambios en un txt
     def guardarCambios(self):
         global texto
