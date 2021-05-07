@@ -10,8 +10,8 @@ movies_data = pd.read_csv('ml-latest-small/ml-latest-small/movies.csv')
 ratings_data = pd.read_csv('ml-latest-small/ml-latest-small/ratings.csv')
 tags_data = pd.read_csv('ml-latest-small/ml-latest-small/tags.csv')
 
-# Pasar los DataFrame a SQL
-links_data.to_sql('links', connection, if_exists='replace', index=False, dtype='INTEGER')
+# Pasar los DataFrame a SQL y subirlos a la base de datos
+links_data.to_sql('links', connection, if_exists='replace', index=False, dtype='INTEGER') # Especifico el tipo porque si no lo ponía como real
 movies_data.to_sql('movies', connection, if_exists='replace', index=False)
 ratings_data.to_sql('ratings', connection, if_exists='replace', index=False)
 tags_data.to_sql('tags', connection, if_exists='replace', index=False)
@@ -20,8 +20,8 @@ tags_data.to_sql('tags', connection, if_exists='replace', index=False)
 cursor = connection.cursor()
 
 # Pruebas de que ha funcionado
-for row in cursor.execute('SELECT * FROM links'):
-    print(row)
+"""for row in cursor.execute('SELECT * FROM links'):
+    print(row)"""
 
 # Se cierra la conexión con la base de datos
 connection.close()
