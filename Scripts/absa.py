@@ -1,19 +1,16 @@
-# Import necessary libraries
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
-import seaborn as sns
-from scipy.spatial.distance import pdist, squareform
-# utils import
+import pandas as pd
 from fuzzywuzzy import fuzz
+from scipy.spatial.distance import pdist, squareform
+from scipy.sparse import csr_matrix
+import seaborn as sns
+from sklearn.neighbors import NearestNeighbors
 
-
-# read data
+# Lectura de datos
 df_movies = pd.read_csv('ml-latest-small/ml-latest-small/movies.csv', usecols=['movieId', 'title'], dtype={'movieId': 'int32', 'title': 'str'})
 df_ratings = pd.read_csv('ml-latest-small/ml-latest-small/ratings.csv', usecols=['userId', 'movieId', 'rating'], dtype={'userId': 'int32', 'movieId': 'int32', 'rating': 'float32'})
 
-
-from scipy.sparse import csr_matrix
 # pivot ratings into movie features
 df_movie_features = df_ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(0)
 
@@ -24,14 +21,6 @@ movie_to_idx = { movie: i for i, movie in enumerate(list(df_movies.set_index('mo
 mat_movie_features = csr_matrix(df_movie_features.values)
 
 
-#Ajustado prueba
-M_u = M.mean(axis=1)
-item_mean_subtracted = M - mat_movie_features[:, None]
-similarity_matrix = 1 - squareform(pdist(item_mean_subtracted.T, 'cosine'))
-print(similarity_matrix)
-
-
-from sklearn.neighbors import NearestNeighbors
 model_knn = NearestNeighbors(metric='cosine', algorithm='brute', n_neighbors=5, n_jobs=-1)
 
 model_knn.fit(mat_movie_features)

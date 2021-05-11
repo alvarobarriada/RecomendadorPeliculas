@@ -1,7 +1,5 @@
-
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 
 df_ratings = pd.read_csv('ml-latest-small/ml-latest-small/ratings.csv', usecols=['userId', 'movieId', 'rating'], dtype={'userId': 'int32', 'movieId': 'int32', 'rating': 'float32'})
 

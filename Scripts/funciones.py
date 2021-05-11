@@ -7,3 +7,5 @@ def cosenoAjustado(a, b):
     
     pass
 
+# TODO: mezclar absa y absa2 para conseguir el código final
+
