@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from IPython.display import Image
+from scipy.spatial.distance import pdist, squareform
 # utils import
 from fuzzywuzzy import fuzz
 
@@ -22,6 +22,13 @@ movie_to_idx = { movie: i for i, movie in enumerate(list(df_movies.set_index('mo
 
 # convert dataframe of movie features to scipy sparse matrix
 mat_movie_features = csr_matrix(df_movie_features.values)
+
+
+#Ajustado prueba
+M_u = M.mean(axis=1)
+item_mean_subtracted = M - mat_movie_features[:, None]
+similarity_matrix = 1 - squareform(pdist(item_mean_subtracted.T, 'cosine'))
+print(similarity_matrix)
 
 
 from sklearn.neighbors import NearestNeighbors
