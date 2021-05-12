@@ -12,13 +12,17 @@ class MyWindow(QtWidgets.QMainWindow):
         super(MyWindow,self).__init__()
 
         #Iniciamos la primera ventana
-        uic.loadUi('Interface/main.ui',self)      
+        uic.loadUi('Interface/variante.ui',self)      
 
         #Boton recomendar
         self.btnRecomendar.clicked.connect(self.recomendar)
         
         ## Botón predecir
         self.btnPredecir.clicked.connect(self.predecir)
+
+        ## Carga imagen estrella
+        
+        
         
     
     def recomendar(self):
