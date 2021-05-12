@@ -6,28 +6,32 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1124</width>
-    <height>708</height>
+    <width>795</width>
+    <height>779</height>
    </rect>
-  </property>
-  <property name="contextMenuPolicy">
-   <enum>Qt::DefaultContextMenu</enum>
   </property>
   <property name="windowTitle">
    <string>Recomendador de películas</string>
   </property>
-  <property name="autoFillBackground">
-   <bool>false</bool>
-  </property>
-  <property name="styleSheet">
-   <string notr="true"/>
-  </property>
   <widget class="QWidget" name="centralwidget">
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>-20</x>
+      <y>590</y>
+      <width>941</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
    <widget class="QPushButton" name="btnRecomendar">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>290</y>
+      <x>330</x>
+      <y>180</y>
       <width>161</width>
       <height>41</height>
      </rect>
@@ -42,8 +46,7 @@
      <string notr="true">border-radius:10px;
 background-color:cyan;
 color:black;
-border:double;
-border-size:2px;</string>
+border:double;</string>
     </property>
     <property name="text">
      <string>Recomendar</string>
@@ -52,8 +55,8 @@ border-size:2px;</string>
    <widget class="QPushButton" name="btnPredecir">
     <property name="geometry">
      <rect>
-      <x>790</x>
-      <y>250</y>
+      <x>590</x>
+      <y>640</y>
       <width>121</width>
       <height>51</height>
      </rect>
@@ -68,8 +71,7 @@ border-size:2px;</string>
      <string notr="true">border-radius:10px;
 background-color:cyan;
 color:black;
-border:double;
-border-size:2px;</string>
+border:double;</string>
     </property>
     <property name="text">
      <string>Predecir</string>
@@ -78,9 +80,9 @@ border-size:2px;</string>
    <widget class="QLabel" name="Titulo">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>-10</y>
-      <width>451</width>
+      <x>180</x>
+      <y>0</y>
+      <width>611</width>
       <height>91</height>
      </rect>
     </property>
@@ -93,14 +95,35 @@ border-size:2px;</string>
      </font>
     </property>
     <property name="text">
-     <string>Recomendaciones para ti</string>
+     <string>Recomendador de películas</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Ranking">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>240</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Montserrat</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Ranking</string>
     </property>
    </widget>
    <widget class="QTableView" name="tabla">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>370</y>
+      <x>220</x>
+      <y>290</y>
       <width>341</width>
       <height>291</height>
      </rect>
@@ -112,8 +135,8 @@ border-size:2px;</string>
    <widget class="QLabel" name="seleccionaUserPred">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>120</y>
+      <x>50</x>
+      <y>610</y>
       <width>291</width>
       <height>51</height>
      </rect>
@@ -133,8 +156,8 @@ border-size:2px;</string>
    <widget class="QTextEdit" name="userabajo">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>130</y>
+      <x>320</x>
+      <y>620</y>
       <width>221</width>
       <height>31</height>
      </rect>
@@ -143,8 +166,8 @@ border-size:2px;</string>
    <widget class="QLabel" name="seleccionaPeli">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>170</y>
+      <x>50</x>
+      <y>660</y>
       <width>401</width>
       <height>51</height>
      </rect>
@@ -164,8 +187,8 @@ border-size:2px;</string>
    <widget class="QTextEdit" name="pelicula">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>180</y>
+      <x>320</x>
+      <y>670</y>
       <width>221</width>
       <height>31</height>
      </rect>
@@ -174,30 +197,9 @@ border-size:2px;</string>
    <widget class="QLabel" name="prediccion">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>480</y>
-      <width>231</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Montserrat</family>
-      <pointsize>14</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Valoración prevista</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="prediccionLabel">
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>560</y>
-      <width>51</width>
+      <x>210</x>
+      <y>720</y>
+      <width>201</width>
       <height>51</height>
      </rect>
     </property>
@@ -210,24 +212,45 @@ border-size:2px;</string>
      </font>
     </property>
     <property name="text">
-     <string>4.5</string>
+     <string>Predicción:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="prediccionLabel">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>720</y>
+      <width>131</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Montserrat</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>absa</string>
     </property>
    </widget>
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>100</y>
-      <width>351</width>
+      <x>30</x>
+      <y>80</y>
+      <width>381</width>
       <height>81</height>
      </rect>
     </property>
     <widget class="QTextEdit" name="userarriba">
      <property name="geometry">
       <rect>
-       <x>240</x>
+       <x>260</x>
        <y>1</y>
-       <width>101</width>
+       <width>115</width>
        <height>36</height>
       </rect>
      </property>
@@ -256,9 +279,9 @@ border-size:2px;</string>
     <widget class="QTextEdit" name="items">
      <property name="geometry">
       <rect>
-       <x>240</x>
-       <y>40</y>
-       <width>101</width>
+       <x>260</x>
+       <y>44</y>
+       <width>115</width>
        <height>36</height>
       </rect>
      </property>
@@ -288,8 +311,8 @@ border-size:2px;</string>
    <widget class="QWidget" name="widget_2" native="true">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>190</y>
+      <x>440</x>
+      <y>80</y>
       <width>351</width>
       <height>81</height>
      </rect>
@@ -356,101 +379,6 @@ border-size:2px;</string>
       </rect>
      </property>
     </widget>
-   </widget>
-   <widget class="Line" name="line">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>-50</y>
-      <width>20</width>
-      <height>761</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>670</y>
-      <width>311</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Las 5 pelis que más te gustarán según el algoritmo</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="Titulo_2">
-    <property name="geometry">
-     <rect>
-      <x>740</x>
-      <y>-10</y>
-      <width>281</width>
-      <height>91</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Montserrat</family>
-      <pointsize>20</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Predicciones</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>50</y>
-      <width>511</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>¡Adivina la puntuación con la que valorarás la siguiente película de la lista que veas!</string>
-    </property>
-   </widget>
-   <widget class="QFrame" name="frame">
-    <property name="geometry">
-     <rect>
-      <x>870</x>
-      <y>380</y>
-      <width>211</width>
-      <height>301</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>560</y>
-      <width>51</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>star.png</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
    </widget>
   </widget>
  </widget>

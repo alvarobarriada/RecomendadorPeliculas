@@ -1,18 +1,23 @@
 # Imports
-import os
+import sqlite3
 import sys
-from PyQt5 import QtMultimedia, QtWidgets, uic
+from PyQt5 import QtWidgets, uic
+  
+# Conexión con la base de datos SQLite
+connection = sqlite3.connect(r'Database/Movielens.db')
 
-# Variables globales
+# Se crea un cursor para ejecutar las órdenes SQL
+cursor = connection.cursor()
+
+# Número por defecto de items del ranking
 RANKING_DEFAULT = 5
-
 class MyWindow(QtWidgets.QMainWindow):
     
     def __init__(self):
         super(MyWindow,self).__init__()
 
         #Iniciamos la primera ventana
-        uic.loadUi('Interface/variante.ui',self)      
+        uic.loadUi('Interface/main.ui',self)      
 
         #Boton recomendar
         self.btnRecomendar.clicked.connect(self.recomendar)
@@ -22,7 +27,25 @@ class MyWindow(QtWidgets.QMainWindow):
         
     
     def recomendar(self):
-        pass
+
+        # 1.- Cogemos la información del usuario
+        usuario = self.userarriba.toPlainText()
+        sql = 'SELECT * FROM ratings WHERE userID = '
+        query = sql + usuario
+        print(query)
+        cursor.execute(query)
+        
+        ## Imprimimos resultados
+        result = cursor.fetchall()
+        for x in result:
+            print(x)
+
+        # 2.- Cogemos el número de items a seleccionar
+        if self.items.toPlainText() == "":
+            num = RANKING_DEFAULT
+        else:
+            num = self.items.toPlainText()
+
     
     
     def predecir(self):
