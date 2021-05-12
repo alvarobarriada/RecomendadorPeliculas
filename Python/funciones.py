@@ -1,7 +1,7 @@
 #Librerias
-import imp
 import numpy as np
 import pandas as pd
+from fuzzywuzzy import fuzz
 
 # Función del coseno ajustado
 """
@@ -71,6 +71,27 @@ def matriz_ajustada(rankings):
     
     return matriz_pesos
 
+#Esta función consigue que si el usuario comete una errata a la hora de introducir el titulo de la pelicula
+#se encuentre igualmente
+def fuzzy(matrix, movie_selected, verbose = True):
+    match_tuple = []
+    
+    for title, idx in matrix.items():
+        parecido = fuzz.ratio(title.lower(), movie_selected.lower())
+        #Se mira si se parece y si es asi se guarda
+        if parecido >= 60:
+            match_tuple.append(title, idx, parecido)
+        #Se ordena por ratio de parecido
+        match_tuple = sorted(match_tuple, key=lambda x: x[2])[::-1]
+    
+    if not match_tuple:
+        print('Pelicula no encontrada')
+        return
+
+    if verbose:
+        print('Se encontraron posibles parecidos en la bbdd: {0}\n'.format([x[0] for x in match_tuple]))
+    
+    return match_tuple[0][1]
 
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
 
