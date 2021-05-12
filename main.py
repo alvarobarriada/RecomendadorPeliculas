@@ -19,10 +19,6 @@ class MyWindow(QtWidgets.QMainWindow):
         
         ## Botón predecir
         self.btnPredecir.clicked.connect(self.predecir)
-
-        ## Carga imagen estrella
-        
-        
         
     
     def recomendar(self):
