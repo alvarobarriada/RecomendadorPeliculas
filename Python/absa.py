@@ -8,14 +8,17 @@ import seaborn as sns
 from sklearn.neighbors import NearestNeighbors
 
 # Lectura de datos
-df_movies = pd.read_csv('ml-latest-small/ml-latest-small/movies.csv', usecols=['movieId', 'title'], dtype={'movieId': 'int32', 'title': 'str'})
-df_ratings = pd.read_csv('ml-latest-small/ml-latest-small/ratings.csv', usecols=['userId', 'movieId', 'rating'], dtype={'userId': 'int32', 'movieId': 'int32', 'rating': 'float32'})
+df_movies = pd.read_csv('Database/ml-latest-small/ml-latest-small/movies.csv', usecols=['movieId', 'title'], dtype={'movieId': 'int32', 'title': 'str'})
+df_ratings = pd.read_csv('Database/ml-latest-small/ml-latest-small/ratings.csv', usecols=['userId', 'movieId', 'rating'], dtype={'userId': 'int32', 'movieId': 'int32', 'rating': 'float32'})
 
 # pivot ratings into movie features
 df_movie_features = df_ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(0)
+print(df_movie_features)
+
 
 # create mapper from movie title to index
 movie_to_idx = { movie: i for i, movie in enumerate(list(df_movies.set_index('movieId').loc[df_movie_features.index].title))}
+#print(movie_to_idx)
 
 # convert dataframe of movie features to scipy sparse matrix
 mat_movie_features = csr_matrix(df_movie_features.values)

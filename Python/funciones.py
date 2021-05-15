@@ -1,21 +1,32 @@
 #Librerias
+from fuzzywuzzy import fuzz
 import numpy as np
 import pandas as pd
-from fuzzywuzzy import fuzz
 import sqlite3
 from scipy import spatial
 from sklearn.metrics.pairwise import cosine_similarity
-from scipy.spatial.distance import cosine
-from sklearn.feature_extraction.text import CountVectorizer
+
+#Variables globales
+# Conexión con la base de datos SQLite
+connection = sqlite3.connect(r'/Users/sofiamartinezparada/Documents/GitHub/RecomendadorPeliculas/Database/Movielens.db')
+cursor = connection.cursor()
+
+cursor.execute('SELECT * FROM ratings')
+result = cursor.fetchall()
+ratings = pd.DataFrame.from_records(result, exclude = ['timestamp'], columns = ['userId' , 'movieId', 'rating', 'timestamp'])
+
+df_movie_features = ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(0)
+
+cursor.execute('SELECT * FROM movies')
+result = cursor.fetchall()
+movies = pd.DataFrame.from_records(result, exclude = ['genres'], columns = ['movieId' , 'title', 'genres'])
+movie_to_idx = { movie: i for i, movie in enumerate(list(movies.set_index('movieId').loc[df_movie_features.index].title))}
 
 # Función del coseno ajustado
 """
 SIM(A,B) = sumatorio{ (ru,a - media(ru)) * (ru,b - media(ru)) } / sqrt{ sumatorio { [(ru,a - media(ru)]^2 } } * sqrt{ sumatorio { [(ru,b - media(ru)]^2 } }
 Resultados entre [-1,1]
 """
-def cosenoAjustado(a, b):
-    
-    pass
 
 # TODO: mezclar absa y absa2 para conseguir el código final
 
@@ -41,8 +52,12 @@ def fuzzy(matrix, movie_selected, verbose = True):
     for title, idx in matrix.items():
         parecido = fuzz.ratio(title.lower(), movie_selected.lower())
         #Se mira si se parece y si es asi se guarda
-        if parecido >= 60:
-            match_tuple.append(title, idx, parecido)
+        if parecido >= 65:
+            cursor = connection.cursor()
+            sql = 'SELECT * FROM movies where title = \'' + title + '\''
+            cursor.execute(sql)
+            result = cursor.fetchone()[0]
+            match_tuple.append((title, result, parecido))
         #Se ordena por ratio de parecido
         match_tuple = sorted(match_tuple, key=lambda x: x[2])[::-1]
     
@@ -52,8 +67,8 @@ def fuzzy(matrix, movie_selected, verbose = True):
 
     if verbose:
         print('Se encontraron posibles parecidos en la bbdd: {0}\n'.format([x[0] for x in match_tuple]))
-    
-    return match_tuple[0][1]
+    return match_tuple
+    #return match_tuple[0][1]
 
 def cosine_similarity(ratings,mov1,mov2):
     a = ratings.iloc[mov1]
@@ -65,8 +80,10 @@ def cosine_similarity(ratings,mov1,mov2):
     return scoreDistance
 
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
-def prediccion(movieId, userId, rating):
+def prediccion(movieTitle, userId, rating):
     pred = 0
+    peli = fuzzy(movie_to_idx, movieTitle)
+    movieId = peli[0][1]
     ajustada = matriz_ajustada(rating)
     subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
     valoradas = subsetDataFrame1.get('movieId').tolist()
@@ -87,19 +104,16 @@ def prediccion(movieId, userId, rating):
         pred = sumatorioenumerador / sumatoriodenominador
         return pred
     else:
-        print('La pelicula ya ha sido valorada por este user')
         pred = 1e-8
-        
-        #pelisvaloradas = np.unique(ajustada['movieId'])
-        #print(pelisvaloradas)
     return pred
 
-# Conexión con la base de datos SQLite
-connection = sqlite3.connect(r'/Users/sofiamartinezparada/Documents/GitHub/RecomendadorPeliculas/Database/Movielens.db')
-cursor = connection.cursor()
-cursor.execute('SELECT * FROM ratings')
-result = cursor.fetchall()
-data = pd.DataFrame.from_records(result, exclude = ['timestamp'], columns = ['userId' , 'movieId', 'rating', 'timestamp'])
-pred = prediccion(71, 1, data)
 
+pred = prediccion('jumanji', 1, ratings)
 print(pred)
+
+#peli = fuzzy(movie_to_idx,'toy estory')
+
+#Para acceder al nombre peli[0][0]
+#Para el movieId peli[0][1]
+#print(peli[0][0])
+#print(peli[0][1])
