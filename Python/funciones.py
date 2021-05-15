@@ -1,7 +1,9 @@
 #Librerias
+from bs4 import BeautifulSoup
 from fuzzywuzzy import fuzz
 import numpy as np
 import pandas as pd
+import requests
 import sqlite3
 from scipy import spatial
 from sklearn.metrics.pairwise import cosine_similarity
@@ -14,7 +16,6 @@ cursor = connection.cursor()
 cursor.execute('SELECT * FROM ratings')
 result = cursor.fetchall()
 ratings = pd.DataFrame.from_records(result, exclude = ['timestamp'], columns = ['userId' , 'movieId', 'rating', 'timestamp'])
-
 df_movie_features = ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(0)
 
 cursor.execute('SELECT * FROM movies')
@@ -46,29 +47,32 @@ def matriz_ajustada(df_ratings):
 
 #Esta función consigue que si el usuario comete una errata a la hora de introducir el titulo de la pelicula
 #se encuentre igualmente
-def fuzzy(matrix, movie_selected, verbose = True):
-    match_tuple = []
-    
-    for title, idx in matrix.items():
-        parecido = fuzz.ratio(title.lower(), movie_selected.lower())
-        #Se mira si se parece y si es asi se guarda
-        if parecido >= 65:
-            cursor = connection.cursor()
-            sql = 'SELECT * FROM movies where title = \'' + title + '\''
-            cursor.execute(sql)
-            result = cursor.fetchone()[0]
-            match_tuple.append((title, result, parecido))
-        #Se ordena por ratio de parecido
-        match_tuple = sorted(match_tuple, key=lambda x: x[2])[::-1]
-    
-    if not match_tuple:
-        print('Pelicula no encontrada')
-        return
+def fuzzy(movie_selected, verbose = True):
+    try:
+        match_tuple = []
+        
+        for title, idx in movie_to_idx.items():
+            parecido = fuzz.ratio(title.lower(), movie_selected.lower())
+            #Se mira si se parece y si es asi se guarda
+            if parecido >= 65:
 
-    if verbose:
-        print('Se encontraron posibles parecidos en la bbdd: {0}\n'.format([x[0] for x in match_tuple]))
-    return match_tuple
-    #return match_tuple[0][1]
+                    cursor = connection.cursor()
+                    sql = 'SELECT * FROM movies where title = \'' + title + '\''
+                    cursor.execute(sql)
+                    result = cursor.fetchone()[0]
+                    match_tuple.append((title, result, parecido))
+            #Se ordena por ratio de parecido
+            match_tuple = sorted(match_tuple, key=lambda x: x[2])[::-1]
+        
+        if not match_tuple:
+            print('Pelicula no encontrada')
+            return None
+
+        if verbose:
+            print('Se encontraron posibles parecidos en la bbdd: {0}\n'.format([x[0] for x in match_tuple]))
+        return match_tuple
+    except:
+        return None
 
 def cosine_similarity(ratings,mov1,mov2):
     a = ratings.iloc[mov1]
@@ -80,36 +84,65 @@ def cosine_similarity(ratings,mov1,mov2):
     return scoreDistance
 
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
-def prediccion(movieTitle, userId, rating):
+def prediccion(movieTitle, userId):
     pred = 0
-    peli = fuzzy(movie_to_idx, movieTitle)
-    movieId = peli[0][1]
-    ajustada = matriz_ajustada(rating)
-    subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
-    valoradas = subsetDataFrame1.get('movieId').tolist()
-    subsetDataFrame2 = subsetDataFrame1[subsetDataFrame1['movieId'] == movieId]
-    sumatorioenumerador = 0
-    sumatoriodenominador = 0
+    peli = fuzzy(movieTitle)
+    if (peli != None):
+        movieId = peli[0][1]
+        ajustada = matriz_ajustada(ratings)
+        subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
+        valoradas = subsetDataFrame1.get('movieId').tolist()
+        subsetDataFrame2 = subsetDataFrame1[subsetDataFrame1['movieId'] == movieId]
+        sumatorioenumerador = 0
+        sumatoriodenominador = 0
 
-    if (subsetDataFrame2.empty):
-        for valorada in valoradas:
-            distancia = cosine_similarity(ajustada, movieId, valorada)
-            #sin ajustar!
-            rate_valorada = rating.iloc[valorada]
-            scoreB = rate_valorada['rating']
-            numerador  = distancia * scoreB
-            sumatorioenumerador = sumatorioenumerador + numerador
-            sumatoriodenominador = sumatoriodenominador + distancia
+        if (subsetDataFrame2.empty):
+            for valorada in valoradas:
+                distancia = cosine_similarity(ajustada, movieId, valorada)
+                #sin ajustar!
+                rate_valorada = ratings.iloc[valorada]
+                scoreB = rate_valorada['rating']
+                numerador  = distancia * scoreB
+                sumatorioenumerador = sumatorioenumerador + numerador
+                sumatoriodenominador = sumatoriodenominador + distancia
 
-        pred = sumatorioenumerador / sumatoriodenominador
-        return pred
+            pred = sumatorioenumerador / sumatoriodenominador
+            return pred
+        else:
+            pred = 1e-8  
+        
     else:
-        pred = 1e-8
+        pred = 1e-12
+    
     return pred
 
 
-pred = prediccion('jumanji', 1, ratings)
-print(pred)
+def download_image(movieId):
+    try:
+        cursor = connection.cursor()
+        sql = 'SELECT * FROM links where movieId = \'' + str(movieId) + '\''
+        cursor.execute(sql)
+        result = cursor.fetchone()[1]
+        cursor.close()
+
+        if (result != None):
+            try:
+                enlace = 'https://www.imdb.com/title/tt0' + str(result) + '/?ref_=nv_sr_srsg_0'
+                page = requests.get(enlace)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                div_poster = soup.find('div', class_ = "poster")
+                imgimg = div_poster.find('img')
+                imagen = imgimg['src']
+                nombreArchivo = 'Database/img/'  + str(movieId) + '.jpg'
+                with open(nombreArchivo, "wb") as f:
+                    f.write(requests.get(imagen).content)
+            except:
+                print('Fallo en conexion')
+    except:
+        print('Fallo en la conexion a la BBDD')
+    
+#pred = prediccion('toy estory', str(1))
+# si pred = 1e-8 el señoro ya la valoro
 
 #peli = fuzzy(movie_to_idx,'toy estory')
 

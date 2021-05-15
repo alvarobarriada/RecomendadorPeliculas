@@ -170,9 +170,9 @@ color:black;</string>
    <widget class="QLabel" name="prediccion">
     <property name="geometry">
      <rect>
-      <x>600</x>
+      <x>650</x>
       <y>480</y>
-      <width>231</width>
+      <width>141</width>
       <height>51</height>
      </rect>
     </property>
@@ -185,28 +185,7 @@ color:black;</string>
      </font>
     </property>
     <property name="text">
-     <string>Valoración prevista</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="prediccionLabel">
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>560</y>
-      <width>51</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Montserrat</family>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>4.5</string>
+     <string>Valoración prevista:</string>
     </property>
    </widget>
    <widget class="QWidget" name="widget" native="true">
@@ -429,29 +408,13 @@ p, li { white-space: pre-wrap; }
      <string>¡Adivina la puntuación con la que valorarás la siguiente película de la lista que veas!</string>
     </property>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="QLabel" name="estrella">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>380</y>
-      <width>211</width>
-      <height>301</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>560</y>
-      <width>51</width>
-      <height>51</height>
+      <x>820</x>
+      <y>540</y>
+      <width>31</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -462,6 +425,116 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="scaledContents">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="prediccion_2">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>530</y>
+      <width>241</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Montserrat</family>
+      <pointsize>14</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="estrella_2">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>540</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>star.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="estrella_3">
+    <property name="geometry">
+     <rect>
+      <x>760</x>
+      <y>540</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>star.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="estrella_4">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>540</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>star.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="estrella_5">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>540</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>star.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="img_pelicula">
+    <property name="geometry">
+     <rect>
+      <x>890</x>
+      <y>360</y>
+      <width>201</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>
