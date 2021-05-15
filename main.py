@@ -69,7 +69,9 @@ class MyWindow(QtWidgets.QMainWindow):
         self.estrella_4.setHidden(True)
         self.estrella_5.setHidden(True)
         usuario = self.userabajo.toPlainText()
-        pelicula = self.pelicula.toPlainText()
+        pel = self.pelicula.toPlainText()
+        peli = pel.replace('(', '')
+        pelicula = peli.replace(')', '')
         pred = funciones.prediccion(pelicula, int(usuario))
         nombre = funciones.fuzzy(pelicula)
         if (nombre != None):
