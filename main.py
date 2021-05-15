@@ -30,7 +30,7 @@ class MyWindow(QtWidgets.QMainWindow):
 
         # 1.- Cogemos la información del usuario
         usuario = self.userarriba.toPlainText()
-        sql = 'SELECT * FROM ratings WHERE userID = '
+        sql = 'SELECT * FROM ratings WHERE userId = '
         query = sql + usuario
         print(query)
         cursor.execute(query)

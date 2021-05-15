@@ -5,10 +5,10 @@ import pandas as pd
 connection = sqlite3.connect(r'Movielens.db')
   
 # Cargar ficheros CSV en un DataFrame de Pandas
-links_data = pd.read_csv('ml-latest-small/ml-latest-small/links.csv')
-movies_data = pd.read_csv('ml-latest-small/ml-latest-small/movies.csv')
-ratings_data = pd.read_csv('ml-latest-small/ml-latest-small/ratings.csv')
-tags_data = pd.read_csv('ml-latest-small/ml-latest-small/tags.csv')
+links_data = pd.read_csv('Database/ml-latest-small/ml-latest-small/links.csv')
+movies_data = pd.read_csv('Database/ml-latest-small/ml-latest-small/movies.csv')
+ratings_data = pd.read_csv('Database/ml-latest-small/ml-latest-small/ratings.csv')
+tags_data = pd.read_csv('Database/ml-latest-small/ml-latest-small/tags.csv')
 
 # Pasar los DataFrame a SQL y subirlos a la base de datos
 links_data.to_sql('links', connection, if_exists='replace', index=False, dtype='INTEGER') # Especifico el tipo porque si no lo ponía como real
