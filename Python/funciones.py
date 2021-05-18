@@ -17,12 +17,13 @@ cursor = connection.cursor()
 cursor.execute('SELECT * FROM ratings')
 result = cursor.fetchall()
 ratings = pd.DataFrame.from_records(result, exclude = ['timestamp'], columns = ['userId' , 'movieId', 'rating', 'timestamp'])
-df_movie_features = ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(0)
+df_movie_features = ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(np.NaN)
 
 cursor.execute('SELECT * FROM movies')
 result = cursor.fetchall()
 movies = pd.DataFrame.from_records(result, exclude = ['genres'], columns = ['movieId' , 'title', 'genres'])
 movie_to_idx = { movie: i for i, movie in enumerate(list(movies.set_index('movieId').loc[df_movie_features.index].title))}
+print(ratings)
 
 # Función del coseno ajustado
 """
@@ -83,6 +84,18 @@ def cosine_similarity(adj,mov1,mov2):
     scoreDistance = distance.cosine(result['a'], result['b'])
     return scoreDistance
 
+def consultarBBDD(userId, movieId):
+    connection = sqlite3.connect(r'Database/Movielens.db')
+    cursor = connection.cursor()
+    sql1 = 'SELECT rating FROM ratings where userId = '
+    sql2= ' AND movieId = '
+    sql = sql1 + str(userId) + sql2 + str(movieId)
+    cursor.execute(sql)
+    result = cursor.fetchone()
+    connection.close()
+    print(result)
+    return result[0]
+
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
 def prediccion(movieTitle, userId):
     pred = 0
@@ -100,8 +113,10 @@ def prediccion(movieTitle, userId):
             for valorada in valoradas:
                 distancia = cosine_similarity(ajustada, movieId, valorada)
                 #sin ajustar!
+                scoreB = consultarBBDD(userId, valorada)
+                '''
                 rate_valorada = ratings.iloc[valorada]
-                scoreB = rate_valorada['rating']
+                scoreB = rate_valorada['rating']'''
                 numerador  = distancia * scoreB
                 sumatorioenumerador = sumatorioenumerador + numerador
                 sumatoriodenominador = sumatoriodenominador + distancia
@@ -115,6 +130,7 @@ def prediccion(movieTitle, userId):
         pred = 1e-12
     
     return pred
+
 
 def download_image(movieId):
     try:

@@ -136,4 +136,4 @@ def recomendacion(userId):
     movieId = tupla_no_valorada[0][1]
     print(movieId)
 
-#recomendacion(2)
+recomendacion(2)
