@@ -68,8 +68,6 @@ def fuzzy(movie_selected, verbose = True):
             print('Pelicula no encontrada')
             return None
 
-        if verbose:
-            print('Se encontraron posibles parecidos en la bbdd: {0}\n'.format([x[0] for x in match_tuple]))
         return match_tuple
     except:
         return None
