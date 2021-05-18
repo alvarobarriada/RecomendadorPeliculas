@@ -12,59 +12,6 @@ rankings['rating_adjusted']=rankings['rating']-rankings['rating_mean']
 rankings.loc[rankings['rating_adjusted'] == 0, 'rating_adjusted'] = 1e-8
 
 
-# function of building the item-to-item weight matrix
-def build_w_matrix(rankings):
-    # define weight matrix
-    matriz_pesos_columnas = ['pelicula1', 'movie_2', 'peso']
-    matriz_pesos=pd.DataFrame(columns=matriz_pesos_columnas)
-
-   # calculate the similarity values
-
-    peliculas = np.unique(rankings['movieId'])
-
-    # for each pelicula1 in all movies
-    for pelicula1 in peliculas:
-
-
-        # extract all users who rated movie_1
-        user_rating = rankings[rankings['movieId'] == pelicula1]
-        usuarios = np.unique(user_rating['userId'])
-
-        # record the ratings for users who rated both pelicula1 and movie_2
-        columnas_a_guardar = ['userId', 'pelicula1', 'movie_2', 'rating_adjusted_1', 'rating_adjusted_2']
-        record_movie_1_2 = pd.DataFrame(columns=columnas_a_guardar)
-        # for each customer C who rated movie_1
-        for user in usuarios:
-            print('build weight matrix for customer %d, pelicula1 %d' % (user, pelicula1))
-            # the customer's rating for pelicula1
-            c_movie_1_rating = user_rating[user_rating['userId'] == user]['rating_adjusted'].iloc[0]
-            # extract movies rated by the customer excluding pelicula1
-            c_user_data = rankings[(rankings['userId'] == user) & (rankings['movieId'] != pelicula1)]
-            c_distinct_movies = np.unique(c_user_data['movieId'])
-
-            # for each movie rated by customer C as movie=2
-            for movie_2 in c_distinct_movies:
-                # the customer's rating for movie_2
-                c_movie_2_rating = c_user_data[c_user_data['movieId'] == movie_2]['rating_adjusted'].iloc[0]
-                record_row = pd.Series([user, pelicula1, movie_2, c_movie_1_rating, c_movie_2_rating], index=columnas_a_guardar)
-                record_movie_1_2 = record_movie_1_2.append(record_row, ignore_index=True)
-
-        # calculate the similarity values between pelicula1 and the above recorded movies
-        distinct_movie_2 = np.unique(record_movie_1_2['movie_2'])
-        # for each movie 2
-        for movie_2 in distinct_movie_2:
-            print('calculate weight movie_1 %d, movie_2 %d' % (pelicula1, movie_2))
-            paired_movie_1_2 = record_movie_1_2[record_movie_1_2['movie_2'] == movie_2]
-            sim_value_numerator = (paired_movie_1_2['rating_adjusted_1'] * paired_movie_1_2['rating_adjusted_2']).sum()
-            sim_value_denominator = np.sqrt(np.square(paired_movie_1_2['rating_adjusted_1']).sum()) * np.sqrt(np.square(paired_movie_1_2['rating_adjusted_2']).sum())
-            sim_value_denominator = sim_value_denominator if sim_value_denominator != 0 else 1e-8
-            sim_value = sim_value_numerator / sim_value_denominator
-            matriz_pesos = matriz_pesos.append(pd.Series([pelicula1, movie_2, sim_value], index=matriz_pesos_columnas), ignore_index=True)
-
-
-
-    return matriz_pesos
-
 
 # calculate the predicted ratings
 def predict(userId, movieId, w_matrix, rankings, rating_mean):

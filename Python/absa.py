@@ -22,9 +22,10 @@ movie_to_idx = { movie: i for i, movie in enumerate(list(df_movies.set_index('mo
 
 # convert dataframe of movie features to scipy sparse matrix
 mat_movie_features = csr_matrix(df_movie_features.values)
+print(mat_movie_features)
 
 
-model_knn = NearestNeighbors(metric='cosine', algorithm='brute', n_neighbors=5, n_jobs=-1)
+model_knn = NearestNeighbors(metric='cosine', algorithm='brute', n_neighbors=5)
 
 model_knn.fit(mat_movie_features)
 

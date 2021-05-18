@@ -1,12 +1,11 @@
-#Librerias
-from bs4 import BeautifulSoup
-from fuzzywuzzy import fuzz
-import numpy as np
-import pandas as pd
-import requests
 import sqlite3
+import pandas as pd
+from fuzzywuzzy import fuzz
+from scipy.spatial.distance import pdist, squareform
 from scipy.spatial import distance
-from sklearn.metrics.pairwise import cosine_similarity
+
+
+
 
 
 #Variables globales
@@ -23,14 +22,6 @@ cursor.execute('SELECT * FROM movies')
 result = cursor.fetchall()
 movies = pd.DataFrame.from_records(result, exclude = ['genres'], columns = ['movieId' , 'title', 'genres'])
 movie_to_idx = { movie: i for i, movie in enumerate(list(movies.set_index('movieId').loc[df_movie_features.index].title))}
-
-# Función del coseno ajustado
-"""
-SIM(A,B) = sumatorio{ (ru,a - media(ru)) * (ru,b - media(ru)) } / sqrt{ sumatorio { [(ru,a - media(ru)]^2 } } * sqrt{ sumatorio { [(ru,b - media(ru)]^2 } }
-Resultados entre [-1,1]
-"""
-
-# TODO: mezclar absa y absa2 para conseguir el código final
 
 
 #funcion que devuelve la matriz de pesos (ajustada item-item)
@@ -75,12 +66,16 @@ def fuzzy(movie_selected, verbose = True):
         return None
 
 def cosine_similarity(adj,mov1,mov2):
+    
     a = adj.loc[adj['movieId'] == mov1, 'rating_adjusted']
     b = adj.loc[adj['movieId'] == mov2, 'rating_adjusted']
+
     frame = { 'a': a, 'b': b }
     result = pd.DataFrame(frame).fillna(1e-8)
 
     scoreDistance = distance.cosine(result['a'], result['b'])
+
+    #scoreDistance = spatial.distance.cosine(a, b)
     return scoreDistance
 
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
@@ -116,40 +111,29 @@ def prediccion(movieTitle, userId):
     
     return pred
 
-def download_image(movieId):
-    try:
-        cursor = connection.cursor()
-        sql = 'SELECT * FROM links where movieId = \'' + str(movieId) + '\''
-        cursor.execute(sql)
-        result = cursor.fetchone()[1]
-        cursor.close()
 
-        if (result != None):
-            try:
-                enlace = 'https://www.imdb.com/title/tt0' + str(result) + '/?ref_=nv_sr_srsg_0'
-                page = requests.get(enlace)
-                soup = BeautifulSoup(page.content, 'html.parser')
-                div_poster = soup.find('div', class_ = "poster")
-                imgimg = div_poster.find('img')
-                imagen = imgimg['src']
-                nombreArchivo = 'Database/img/'  + str(movieId) + '.jpg'
-                with open(nombreArchivo, "wb") as f:
-                    f.write(requests.get(imagen).content)
-            except:
-                print('Fallo en conexion')
-    except:
-        print('Fallo en la conexion a la BBDD')
+def recomendacion(userId):
+    ajustada = matriz_ajustada(ratings)
+    subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
+    valoradas = subsetDataFrame1.get('movieId').tolist()
+    array_ids_no_valoradas= []
+    for i in range (0, 193610):
+        if i not in valoradas:
+            pelis = ajustada[ajustada['movieId'] == i]
+            if (pelis.empty):
+                pass
+            else:
+                print(i)
+                array_ids_no_valoradas.append(i)
+    for no_valorada in array_ids_no_valoradas:
+        tupla_no_valorada = []
+        for valorada in valoradas:
+            similitud = cosine_similarity(ajustada, no_valorada, valorada)
+            print(similitud)
+            tupla_no_valorada.append((no_valorada, valorada, similitud))
+        tupla_no_valorada = sorted(tupla_no_valorada, key=lambda x: x[2])[::-1]
 
+    movieId = tupla_no_valorada[0][1]
+    print(movieId)
 
-
-def recomendacion():
-    pass
-#pred = prediccion('toy estory', str(1))
-# si pred = 1e-8 el señoro ya la valoro
-
-#peli = fuzzy(movie_to_idx,'toy estory')
-
-#Para acceder al nombre peli[0][0]
-#Para el movieId peli[0][1]
-#print(peli[0][0])
-#print(peli[0][1])
+#recomendacion(2)
