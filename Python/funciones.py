@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 import requests
 import sqlite3
-from scipy.spatial import distance
-from sklearn.metrics.pairwise import cosine_similarity
+from scipy.spatial.distance import cosine
+#from sklearn.metrics.pairwise import cosine_similarity
 
 
 #Variables globales
@@ -23,7 +23,6 @@ cursor.execute('SELECT * FROM movies')
 result = cursor.fetchall()
 movies = pd.DataFrame.from_records(result, exclude = ['genres'], columns = ['movieId' , 'title', 'genres'])
 movie_to_idx = { movie: i for i, movie in enumerate(list(movies.set_index('movieId').loc[df_movie_features.index].title))}
-print(ratings)
 
 # Función del coseno ajustado
 """
@@ -43,7 +42,7 @@ def matriz_ajustada(df_ratings):
     ratings['rating_adjusted']=ratings['rating']-ratings['rating_mean']
 
     # replace 0 adjusted rating values to 1*e-8 in order to avoid 0 denominator
-    ratings.loc[ratings['rating'] == 0, 'rating_adjusted'] = 1e-8
+    ratings.loc[ratings['rating'] == np.NaN, 'rating_adjusted'] = np.NaN
     ratings = ratings.drop(['rating', 'rating_mean'], axis = 1)
     #ratings = ratings.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna()
     return ratings
@@ -75,14 +74,22 @@ def fuzzy(movie_selected, verbose = True):
     except:
         return None
 
-def cosine_similarity(adj,mov1,mov2):
-    a = adj.loc[adj['movieId'] == mov1, 'rating_adjusted']
-    b = adj.loc[adj['movieId'] == mov2, 'rating_adjusted']
-    frame = { 'a': a, 'b': b }
-    result = pd.DataFrame(frame).fillna(1e-8)
+def cosine_sim(df1, df2):
+    
+    df1na = df1.isna()
+    df1clean = df1[~df1na]
+    df2clean = df2[~df1na]
 
-    scoreDistance = distance.cosine(result['a'], result['b'])
-    return scoreDistance
+    df2na = df2clean.isna()
+    df1clean = df1clean[~df2na]
+    df2clean = df2clean[~df2na]
+
+
+    # Compute cosine similarity
+    distance = cosine(df1clean, df2clean)
+    sim = 1 - distance
+
+    return sim
 
 def consultarBBDD(userId, movieId):
     connection = sqlite3.connect(r'Database/Movielens.db')
@@ -93,7 +100,6 @@ def consultarBBDD(userId, movieId):
     cursor.execute(sql)
     result = cursor.fetchone()
     connection.close()
-    print(result)
     return result[0]
 
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
@@ -108,10 +114,11 @@ def prediccion(movieTitle, userId):
         subsetDataFrame2 = subsetDataFrame1[subsetDataFrame1['movieId'] == movieId]
         sumatorioenumerador = 0
         sumatoriodenominador = 0
-
+        ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
         if (subsetDataFrame2.empty):
             for valorada in valoradas:
-                distancia = cosine_similarity(ajustada, movieId, valorada)
+                #distancia = cosine_similarity(ajustada, movieId, valorada)
+                distancia = cosine_sim(ajustada[movieId], ajustada[valorada])
                 #sin ajustar!
                 scoreB = consultarBBDD(userId, valorada)
                 '''
@@ -128,9 +135,7 @@ def prediccion(movieTitle, userId):
         
     else:
         pred = 1e-12
-    
     return pred
-
 
 def download_image(movieId):
     try:
