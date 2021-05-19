@@ -154,7 +154,7 @@ color:black;</string>
      </font>
     </property>
     <property name="text">
-     <string>Selecciona una pelicula:</string>
+     <string>Selecciona una película:</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="pelicula">
@@ -170,9 +170,9 @@ color:black;</string>
    <widget class="QLabel" name="prediccion">
     <property name="geometry">
      <rect>
-      <x>650</x>
+      <x>560</x>
       <y>480</y>
-      <width>141</width>
+      <width>231</width>
       <height>51</height>
      </rect>
     </property>
@@ -334,7 +334,7 @@ p, li { white-space: pre-wrap; }
       </font>
      </property>
      <property name="text">
-      <string>Numero de vecinos:</string>
+      <string>Número de vecinos:</string>
      </property>
     </widget>
     <widget class="QTextEdit" name="vecinos">
