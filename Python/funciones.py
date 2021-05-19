@@ -25,6 +25,7 @@ result = cursor.fetchall()
 movies = pd.DataFrame.from_records(result, exclude = ['genres'], columns = ['movieId' , 'title', 'genres'])
 movie_to_idx = { movie: i for i, movie in enumerate(list(movies.set_index('movieId').loc[df_movie_features.index].title))}
 
+connection.close()
 # Función del coseno ajustado
 """
 SIM(A,B) = sumatorio{ (ru,a - media(ru)) * (ru,b - media(ru)) } / sqrt{ sumatorio { [(ru,a - media(ru)]^2 } } * sqrt{ sumatorio { [(ru,b - media(ru)]^2 } }
@@ -58,12 +59,14 @@ def fuzzy(movie_selected, verbose = True):
             parecido = fuzz.ratio(title.lower(), movie_selected.lower())
             #Se mira si se parece y si es asi se guarda
             if parecido >= 65:
+                connection = sqlite3.connect(r'Database/Movielens.db')
 
-                    cursor = connection.cursor()
-                    sql = 'SELECT * FROM movies where title = \'' + title + '\''
-                    cursor.execute(sql)
-                    result = cursor.fetchone()[0]
-                    match_tuple.append((title, result, parecido))
+                cursor = connection.cursor()
+                sql = 'SELECT * FROM movies where title = \'' + title + '\''
+                cursor.execute(sql)
+                result = cursor.fetchone()[0]
+                connection.close()
+                match_tuple.append((title, result, parecido))
             #Se ordena por ratio de parecido
             match_tuple = sorted(match_tuple, key=lambda x: x[2])[::-1]
         
@@ -93,12 +96,23 @@ def cosine_sim(df1, df2):
     return sim
 
 def cosine_similarity(adj,mov1,mov2):
+    '''
     a = adj.loc[adj['movieId'] == mov1, 'rating_adjusted']
     b = adj.loc[adj['movieId'] == mov2, 'rating_adjusted']
     frame = { 'a': a, 'b': b }
-    result = pd.DataFrame(frame).fillna(1e-8)
-
-    scoreDistance = cosine(result['a'], result['b'])
+    result = pd.DataFrame(frame).fillna(np.nan)
+    ajustada = result.dropna(how = 'any', axis = 'rows')
+    print(ajustada)
+    scoreDistance = cosine(ajustada['a'], ajustada['b'])
+    return scoreDistance'''
+    para_coseno = pd.concat([adj[mov1], adj[mov2]], axis=1, keys=[mov1, mov2])
+    
+    ajustada = para_coseno.dropna(how = 'any', axis = 'rows')
+    if (ajustada.empty):
+        scoreDistance = 0
+    else:
+        scoreDistance = cosine(ajustada[mov1], ajustada[mov2])
+    print(str(mov2) + '------' + str(scoreDistance))
     return scoreDistance
 
 def consultarBBDD(userId, movieId):
@@ -119,24 +133,30 @@ def prediccion(movieTitle, userId):
     if (peli != None):
         movieId = peli[0][1]
         ajustada = matriz_ajustada(ratings)
+        
         subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
         valoradas = subsetDataFrame1.get('movieId').tolist()
         subsetDataFrame2 = subsetDataFrame1[subsetDataFrame1['movieId'] == movieId]
         sumatorioenumerador = 0
         sumatoriodenominador = 0
+        ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
+
         if (subsetDataFrame2.empty):
             for valorada in valoradas:
                 distancia = cosine_similarity(ajustada, movieId, valorada)
-                #distancia = cosine_sim(ajustada[movieId], ajustada[valorada])
-                #sin ajustar!
-                scoreB = consultarBBDD(userId, valorada)
-                '''
-                rate_valorada = ratings.iloc[valorada]
-                scoreB = rate_valorada['rating']'''
-                numerador  = distancia * scoreB
-                sumatorioenumerador = sumatorioenumerador + numerador
-                sumatoriodenominador = sumatoriodenominador + distancia
-
+                if (distancia != 0):
+                    #distancia = cosine_sim(ajustada[movieId], ajustada[valorada])
+                    #sin ajustar!
+                    scoreB = consultarBBDD(userId, valorada)
+                    print('Score: ', scoreB)
+                    '''
+                    rate_valorada = ratings.iloc[valorada]
+                    scoreB = rate_valorada['rating']'''
+                    numerador  = distancia * scoreB
+                    sumatorioenumerador = sumatorioenumerador + numerador
+                    sumatoriodenominador = sumatoriodenominador + distancia
+                print(valorada)
+                print('*****************************')
             pred = sumatorioenumerador / sumatoriodenominador
             return pred
         else:
