@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 import sqlite3
 from scipy.spatial.distance import cosine
+from scipy.spatial import distance
 #from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -91,6 +92,15 @@ def cosine_sim(df1, df2):
 
     return sim
 
+def cosine_similarity(adj,mov1,mov2):
+    a = adj.loc[adj['movieId'] == mov1, 'rating_adjusted']
+    b = adj.loc[adj['movieId'] == mov2, 'rating_adjusted']
+    frame = { 'a': a, 'b': b }
+    result = pd.DataFrame(frame).fillna(1e-8)
+
+    scoreDistance = cosine(result['a'], result['b'])
+    return scoreDistance
+
 def consultarBBDD(userId, movieId):
     connection = sqlite3.connect(r'Database/Movielens.db')
     cursor = connection.cursor()
@@ -114,11 +124,10 @@ def prediccion(movieTitle, userId):
         subsetDataFrame2 = subsetDataFrame1[subsetDataFrame1['movieId'] == movieId]
         sumatorioenumerador = 0
         sumatoriodenominador = 0
-        ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
         if (subsetDataFrame2.empty):
             for valorada in valoradas:
-                #distancia = cosine_similarity(ajustada, movieId, valorada)
-                distancia = cosine_sim(ajustada[movieId], ajustada[valorada])
+                distancia = cosine_similarity(ajustada, movieId, valorada)
+                #distancia = cosine_sim(ajustada[movieId], ajustada[valorada])
                 #sin ajustar!
                 scoreB = consultarBBDD(userId, valorada)
                 '''
@@ -131,8 +140,7 @@ def prediccion(movieTitle, userId):
             pred = sumatorioenumerador / sumatoriodenominador
             return pred
         else:
-            pred = 1e-8  
-        
+            pred = 1e-8
     else:
         pred = 1e-12
     return pred

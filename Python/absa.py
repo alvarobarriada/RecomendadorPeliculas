@@ -13,7 +13,6 @@ df_ratings = pd.read_csv('Database/ml-latest-small/ml-latest-small/ratings.csv',
 
 # pivot ratings into movie features
 df_movie_features = df_ratings.pivot( index= 'movieId', columns='userId', values='rating').fillna(0)
-print(df_movie_features)
 
 
 # create mapper from movie title to index
