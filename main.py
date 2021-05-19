@@ -95,29 +95,42 @@ class MyWindow(QtWidgets.QMainWindow):
 
             else:
                 stars = int(pred)
+                format_float = "{:.2f}".format(pred)
+                info = str(format_float)
+                self.prediccion_2.setText(info)
                 if(stars == 1):
                     self.prediccion_2.setAlignment(Qt.AlignCenter)
                     self.estrella_3.setHidden(False)
+                    
                 elif(stars == 2):
                     self.prediccion_2.setAlignment(Qt.AlignCenter)
                     self.estrella_2.setHidden(False)
                     self.estrella_3.setHidden(False)
+                    format_float = "{:.2f}".format(pred)
+                    info = str(format_float)
+                    self.prediccion_2.setText(info)
                 elif (stars == 3):
                     self.prediccion_2.setAlignment(Qt.AlignCenter)
                     self.estrella.setHidden(False)
                     self.estrella_2.setHidden(False)
                     self.estrella_3.setHidden(False)
+                    format_float = "{:.2f}".format(pred)
+                    info = str(format_float)
+                    self.prediccion_2.setText(info)
                 elif (stars == 4):
+                    self.prediccion_2.setAlignment(Qt.AlignLeft)
                     self.estrella_5.setHidden(False)
                     self.estrella_4.setHidden(False)
                     self.estrella_2.setHidden(False)
                     self.estrella_3.setHidden(False)
+                    format_float = "{:.2f}".format(pred)
+                    info = str(format_float)
+                    self.prediccion_2.setText(info)
                 elif(stars == 0):
                     self.prediccion_2.setAlignment(Qt.AlignCenter)
-                format_float = "{:.2f}".format(pred)
-                info = str(format_float)
-                #self.prediccion_2.setAlignment(Qt.AlignCenter)
-                self.prediccion_2.setText(info)
+                    format_float = "{:.2f}".format(pred)
+                    info = str(format_float)
+                    self.prediccion_2.setText(info)
         else:
             info = 'Pelicula no encontrada'
             self.prediccion_2.setAlignment(Qt.AlignCenter)
