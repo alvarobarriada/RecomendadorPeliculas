@@ -1,8 +1,9 @@
 # Imports
-from PyQt5.QtGui import QPixmap
 from Python import funciones
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
+import os
 import sqlite3
 import sys
   
@@ -78,9 +79,15 @@ class MyWindow(QtWidgets.QMainWindow):
             name = nombre[0][0]
             self.pelicula.setText(name)
             movieId = nombre[0][1]
-            funciones.download_image(movieId)
-            self.insertar_foto(movieId)
 
+            # Comprobación antes de insertar foto de que el archivo existe en la base de datos
+            ruta_foto = 'Database/img/' + str(movieId) + '.jpg'
+            if os.path.isfile(ruta_foto):
+                self.insertar_foto(movieId)
+            else:
+                funciones.download_image(movieId)
+                self.insertar_foto(movieId)
+                
             if (pred == 1e-8):
                 info = 'Ya la ha valorado'
                 self.prediccion_2.setAlignment(Qt.AlignCenter)
@@ -115,10 +122,10 @@ class MyWindow(QtWidgets.QMainWindow):
             info = 'Pelicula no encontrada'
             self.prediccion_2.setAlignment(Qt.AlignCenter)
             self.prediccion_2.setText(info)
+            path_error = 'Database/img/error.png'
+            pixmap = QPixmap(path_error)
+            self.img_pelicula.setPixmap(pixmap)
             
-
-
-
         
 #Método main de la aplicación
 if __name__ == '__main__':
