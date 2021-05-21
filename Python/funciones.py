@@ -82,8 +82,7 @@ def cosine_similarity(adj,mov1,mov2):
     if (ajustada.empty):
         pass
     else:
-        if(ajustada.shape[0] == 1):
-            ajustada.replace(0,1e-12)
+        ajustada.replace(0,1e-12)
         scoreDistance = cosine(ajustada[mov1], ajustada[mov2])
     return scoreDistance
 
@@ -110,7 +109,6 @@ def consultarTitulo (movieId):
     connection.close()
     return result[0]
 
-
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
 def prediccion(movieTitle, userId):
     pred = 0
@@ -129,7 +127,7 @@ def prediccion(movieTitle, userId):
         if (subsetDataFrame2.empty):
             for valorada in valoradas:
                 distancia = cosine_similarity(ajustada, movieId, valorada)
-                if (distancia != 0):
+                if (distancia != None):
                     scoreB = consultarBBDD(userId, valorada)
                     numerador  = distancia * scoreB
                     sumatorioenumerador = sumatorioenumerador + numerador
@@ -203,7 +201,7 @@ def no_valoradas_por (userId):
     return no_valoradas
 
 #Recomendacion, si no hay un valor, poner None
-def predecir_recomendacion(userId,numero_ranking , umbral, vecinos):
+def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
     prediciones = []
     no_valoradas = no_valoradas_por(userId)
     no_valoradas.sort()
@@ -225,12 +223,12 @@ def predecir_recomendacion(userId,numero_ranking , umbral, vecinos):
                         sumatoriodenominador = sumatoriodenominador + distancia
             if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
                 pred = sumatorioenumerador / sumatoriodenominador
-                #print('Id no valorada: ' , no_valorada)
-                #print('Prediccion: ' , pred)
+                print('Id no valorada: ' , no_valorada)
+                print('Prediccion: ' , pred)
                 prediciones.append((no_valorada, pred))
-            #else:
-                #print('Para la ' + str(no_valorada) + ' no se ha encontrado ninguna similitud')
-            #print('------')
+            else:
+                print('Para la ' + str(no_valorada) + ' no se ha encontrado ninguna similitud')
+            print('------')
     if(vecinos != None):
         for no_valorada in no_valoradas:
             ajustada = matriz_ajustada(ratings)
@@ -257,21 +255,22 @@ def predecir_recomendacion(userId,numero_ranking , umbral, vecinos):
                 sumatoriodenominador = sumatoriodenominador + distancia
             if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
                 pred = sumatorioenumerador / sumatoriodenominador
-                #print('Id no valorada: ' , no_valorada)
-                #print('Prediccion: ' , pred)
+                print('Id no valorada: ' , no_valorada)
+                print('Prediccion: ' , pred)
                 prediciones.append((no_valorada, pred))
     if (numero_ranking  == None):
         numero_ranking = 5
-    #print('LLEGUE')
+    print('LLEGUE')
     final = []
     prediciones.sort(reverse = True, key= lambda x: x[1])
     for i in range (0, numero_ranking):
         no_val = prediciones[i][0]
         predic = prediciones[i][1]
         titulo = consultarTitulo(no_val)
-        #print('Id no valorada: ' , no_val)
-        #print('Prediccion: ' , predic)
+        print('Id no valorada: ' , no_val)
+        print('Prediccion: ' , predic)
         final.append((titulo, predic))
 
     return final
 
+#predecir_recomendacion(1,3,0.90, None)
