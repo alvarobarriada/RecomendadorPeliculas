@@ -24,13 +24,6 @@ movies = pd.DataFrame.from_records(result, exclude = ['genres'], columns = ['mov
 movie_to_idx = { movie: i for i, movie in enumerate(list(movies.set_index('movieId').loc[df_movie_features.index].title))}
 connection.close()
 
-# Función del coseno ajustado
-"""
-SIM(A,B) = sumatorio{ (ru,a - media(ru)) * (ru,b - media(ru)) } / sqrt{ sumatorio { [(ru,a - media(ru)]^2 } } * sqrt{ sumatorio { [(ru,b - media(ru)]^2 } }
-Resultados entre [-1,1]
-"""
-
-
 #funcion que devuelve la matriz de pesos (ajustada item-item)
 def matriz_ajustada(df_ratings):
     rating_mean= df_ratings.groupby(['userId'], as_index = False, sort = False).mean().rename(columns = {'rating': 'rating_mean'})[['userId','rating_mean']]
