@@ -4,10 +4,8 @@ from fuzzywuzzy import fuzz
 import numpy as np
 import pandas as pd
 import requests
-import sqlite3
 from scipy.spatial.distance import cosine
-from scipy.spatial import distance
-#from sklearn.metrics.pairwise import cosine_similarity
+import sqlite3
 
 
 #Variables globales
@@ -76,16 +74,20 @@ def fuzzy(movie_selected, verbose = True):
         return None
 
 def cosine_similarity(adj,mov1,mov2):
+    scoreDistance = None
     para_coseno = pd.concat([adj[mov1], adj[mov2]], axis=1, keys=[mov1, mov2])
     
     ajustada = para_coseno.dropna(how = 'any', axis = 'rows')
+
     if (ajustada.empty):
-        scoreDistance = 0
+        pass
     else:
+        if(ajustada.shape[0] == 1):
+            ajustada.replace(0,1e-12)
         scoreDistance = cosine(ajustada[mov1], ajustada[mov2])
-  
     return scoreDistance
 
+#Funcion que devuelve el rate
 def consultarBBDD(userId, movieId):
     connection = sqlite3.connect(r'Database/Movielens.db')
     cursor = connection.cursor()
@@ -96,6 +98,18 @@ def consultarBBDD(userId, movieId):
     result = cursor.fetchone()
     connection.close()
     return result[0]
+
+#Funcion que devuelve el titulo de una pelicula
+def consultarTitulo (movieId):
+    connection = sqlite3.connect(r'Database/Movielens.db')
+    cursor = connection.cursor()
+    sql1 = 'SELECT title FROM movies where movieId = '
+    sql = sql1 + str(movieId) 
+    cursor.execute(sql)
+    result = cursor.fetchone()
+    connection.close()
+    return result[0]
+
 
 #funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
 def prediccion(movieTitle, userId):
@@ -130,6 +144,7 @@ def prediccion(movieTitle, userId):
 
 def download_image(movieId):
     try:
+        connection = sqlite3.connect(r'Database/Movielens.db')
         cursor = connection.cursor()
         sql = 'SELECT * FROM links where movieId = \'' + str(movieId) + '\''
         cursor.execute(sql)
@@ -152,6 +167,111 @@ def download_image(movieId):
     except:
         print('Fallo en la conexion a la BBDD')
 
+#Funcion que devuelve las peliculas valoradas por un user
+def valoradas_por (userId):
+    array_pelis = []
+    connection = sqlite3.connect(r'Database/Movielens.db')
+    cursor = connection.cursor()
+    sql = 'SELECT movieId FROM ratings where userId = '
+    consulta= sql + str(userId)
+    cursor.execute(consulta)
+    result = cursor.fetchall()
+    connection.close()
+    for movie in result:
+        array_pelis.append(movie[0])
+    return array_pelis
 
-def recomendacion():
-    pass
+def pelis_totales_valoradas():
+    array_pelis = []
+    connection = sqlite3.connect(r'Database/Movielens.db')
+    cursor = connection.cursor()
+    sql = 'SELECT movieId FROM ratings'
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    connection.close()
+    for movie in result:
+        if movie[0] not in array_pelis:
+            array_pelis.append(movie[0])
+    return array_pelis
+
+#Funcion que devuelve las pelis no valoradas por un usuario
+def no_valoradas_por (userId):
+    user = valoradas_por(userId)
+    valoradas = pelis_totales_valoradas()
+    #Las pelis del total que no estan en las que valoro el user
+    no_valoradas = np.setdiff1d(valoradas, user)
+    return no_valoradas
+
+#Recomendacion, si no hay un valor, poner None
+def predecir_recomendacion(userId,numero_ranking , umbral, vecinos):
+    prediciones = []
+    no_valoradas = no_valoradas_por(userId)
+    no_valoradas.sort()
+    if (umbral != None):
+        for no_valorada in no_valoradas:
+            ajustada = matriz_ajustada(ratings)
+            subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
+            valoradas = subsetDataFrame1.get('movieId').tolist()
+            sumatorioenumerador = 0
+            sumatoriodenominador = 0
+            ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
+            for valorada in valoradas:
+                distancia = cosine_similarity(ajustada, no_valorada, valorada)
+                if (distancia != None):
+                    if (distancia >= umbral):
+                        scoreB = consultarBBDD(userId, valorada)
+                        numerador  = distancia * scoreB
+                        sumatorioenumerador = sumatorioenumerador + numerador
+                        sumatoriodenominador = sumatoriodenominador + distancia
+            if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
+                pred = sumatorioenumerador / sumatoriodenominador
+                #print('Id no valorada: ' , no_valorada)
+                #print('Prediccion: ' , pred)
+                prediciones.append((no_valorada, pred))
+            #else:
+                #print('Para la ' + str(no_valorada) + ' no se ha encontrado ninguna similitud')
+            #print('------')
+    if(vecinos != None):
+        for no_valorada in no_valoradas:
+            ajustada = matriz_ajustada(ratings)
+            subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
+            valoradas = subsetDataFrame1.get('movieId').tolist()
+            sumatorioenumerador = 0
+            sumatoriodenominador = 0
+            ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
+            finales_vecinos =[]
+            for valorada in valoradas:
+                distancia = cosine_similarity(ajustada, no_valorada, valorada)
+                if (distancia != None):
+                    finales_vecinos.append((valorada, distancia))
+            finales_vecinos.sort(reverse = True, key= lambda x: x[1])
+            if (vecinos < len(finales_vecinos)):
+                for i in (len(finales_vecinos)-1, vecinos):
+                    del finales_vecinos[i]
+            for final_ in finales_vecinos:
+                valorar = final_[0]
+                distancia = final_[1]
+                scoreB = consultarBBDD(userId, valorar)
+                numerador  = distancia * scoreB
+                sumatorioenumerador = sumatorioenumerador + numerador
+                sumatoriodenominador = sumatoriodenominador + distancia
+            if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
+                pred = sumatorioenumerador / sumatoriodenominador
+                #print('Id no valorada: ' , no_valorada)
+                #print('Prediccion: ' , pred)
+                prediciones.append((no_valorada, pred))
+    if (numero_ranking  == None):
+        numero_ranking = 5
+    #print('LLEGUE')
+    final = []
+    prediciones.sort(reverse = True, key= lambda x: x[1])
+    for i in range (0, numero_ranking):
+        no_val = prediciones[i][0]
+        predic = prediciones[i][1]
+        titulo = consultarTitulo(no_val)
+        #print('Id no valorada: ' , no_val)
+        #print('Prediccion: ' , predic)
+        final.append((titulo, predic))
+
+    return final
+
