@@ -19,9 +19,5 @@ tags_data.to_sql('tags', connection, if_exists='replace', index=False)
 # Se crea un cursor para ejecutar las órdenes SQL
 cursor = connection.cursor()
 
-# Pruebas de que ha funcionado
-'''for row in cursor.execute('SELECT * FROM links'):
-    print(row)'''
-
 # Se cierra la conexión con la base de datos
 connection.close()

@@ -1,5 +1,5 @@
 # Imports
-from Python import funciones
+from Python import funciones, audio
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
@@ -28,33 +28,54 @@ class MyWindow(QtWidgets.QMainWindow):
         self.estrella_3.setHidden(True)
         self.estrella_4.setHidden(True)
         self.estrella_5.setHidden(True)
+        self.error_radio.setHidden(True)
 
         #Boton recomendar
         self.btnRecomendar.clicked.connect(self.recomendar)
         
         ## Botón predecir
         self.btnPredecir.clicked.connect(self.predecir)
-        
-    
+
     def recomendar(self):
+        # Recogemos valores de userId y número de elementos a mostrar
+        userId = self.userarriba.toPlainText()
+        numero = self.items.toPlainText()
 
-        # 1.- Cogemos la información del usuario
-        usuario = self.userarriba.toPlainText()
-        sql = 'SELECT * FROM ratings WHERE userId = '
-        query = sql + usuario
-        print(query)
-        cursor.execute(query)
+        # Recomendación con número de vecinos
+        if self.radioPatio.isChecked():
+            print("Has elegido número de vecinos")
+            self.error_radio.setHidden(True)
+            
+            if self.vecinos.toPlainText() != 5:
+                vecinos = self.vecinos.toPlainText()
+            else:
+                vecinos = RANKING_DEFAULT
+
+            # Si recomendamos con vecinos, umbral es None
+            recomendacion = funciones.predecir_recomendacion(userId, numero, None, vecinos)
+            audio.musica_ascensor
+
+            # Mostramos valores en la tabla
+            print(recomendacion[0])
         
-        ## Imprimimos resultados
-        result = cursor.fetchall()
-        for x in result:
-            print(x)
+        # Recomendación con umbral de similitud
+        elif self.radioUmbral.isChecked():
+            print("Has elegido umbral de similitud")
+            self.error_radio.setHidden(True)
 
-        # 2.- Cogemos el número de items a seleccionar
-        if self.items.toPlainText() == "":
-            num = RANKING_DEFAULT
+            umbral = self.umbral.toPlainText()
+
+            # Si recomendamos con umbral, vecinos es None
+            recomendacion = funciones.predecir_recomendacion(userId, numero, umbral, None)
+            audio.musica_ascensor
+
+            # Mostramos valores en la tabla
+
+        # Prevención de errores    
         else:
-            num = self.items.toPlainText()
+            print("Por favor, seleccione una de las opcionesSeleccione una opción")
+            self.error_radio.setHidden(False)
+
 
     def insertar_foto(self, movieId):
         path = 'Database/img/' + str(movieId) + '.jpg'
@@ -132,7 +153,7 @@ class MyWindow(QtWidgets.QMainWindow):
                     info = str(format_float)
                     self.prediccion_2.setText(info)
         else:
-            info = 'Pelicula no encontrada'
+            info = 'Película no encontrada'
             self.prediccion_2.setAlignment(Qt.AlignCenter)
             self.prediccion_2.setText(info)
             path_error = 'Database/img/error.png'
