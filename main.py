@@ -62,6 +62,7 @@ class MyWindow(QtWidgets.QMainWindow):
             if (len(recomendacion) != 0 ):
             # Mostramos valores en la tabla
                 self.resultadosTabla(int(numero), recomendacion)
+                #self.tabla.resizeColumnsToContents()
                 #Se para la musica de espera
                 audio.musica_ascensor(False)
             else:
@@ -86,6 +87,7 @@ class MyWindow(QtWidgets.QMainWindow):
             if (len(recomendacion) != 0 ):
                 # Mostramos valores en la tabla
                 self.resultadosTabla(int(numero), recomendacion)
+                #self.tabla.resizeColumnsToContents()
                 audio.musica_ascensor(False)
             else:
                 self.pie.setText('No se han encontrado recomendaciones para las condiciones indicas.')
@@ -200,6 +202,11 @@ class MyWindow(QtWidgets.QMainWindow):
             #Se insertan en la tabla
             self.tabla.setItem(i, 0, QTableWidgetItem(text[0]))
             self.tabla.setItem(i, 1, QTableWidgetItem(info))
+        self.tabla.setHorizontalHeaderLabels(['Título', 'Predicción'])
+        header = self.tabla.horizontalHeader()       
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        
 
 #Método main de la aplicación
 if __name__ == '__main__':
