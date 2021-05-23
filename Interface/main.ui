@@ -39,9 +39,11 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-radius:10px;
-background-color:cyan;
-color:black;</string>
+     <string notr="true">border-radius: 5px;
+padding: 0.2em 0.2em 0.3em 0.2em;
+border: 1px solid rgb(100, 100, 100);
+background: qlineargradient(x1:0, y1:0, x2:0, y2:1,  stop:0 #f4f4f4, stop:0.1 #7B7B7B, stop:1 #8F8F8F);
+color: white;</string>
     </property>
     <property name="text">
      <string>Recomendar</string>
@@ -63,9 +65,11 @@ color:black;</string>
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">border-radius:10px;
-background-color:cyan;
-color:black;</string>
+     <string notr="true">border-radius: 5px;
+padding: 0.2em 0.2em 0.3em 0.2em;
+border: 1px solid rgb(100, 100, 100);
+background: qlineargradient(x1:0, y1:0, x2:0, y2:1,  stop:0 #f4f4f4, stop:0.1 #7B7B7B, stop:1 #8F8F8F);
+color: white;</string>
     </property>
     <property name="text">
      <string>Predecir</string>
