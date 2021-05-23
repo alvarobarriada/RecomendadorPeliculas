@@ -39,6 +39,9 @@ class MyWindow(QtWidgets.QMainWindow):
         self.btnPredecir.clicked.connect(self.predecir)
 
     def recomendar(self):
+        # resetear tabla
+        self.tabla.setRowCount(0)
+        
         # Recogemos valores de userId y número de elementos a mostrar
         userId = self.userarriba.toPlainText()
         numero = self.items.toPlainText()
@@ -186,8 +189,11 @@ class MyWindow(QtWidgets.QMainWindow):
         self.tabla.setRowCount(numero)
         self.tabla.setColumnCount(2)
         for i, text in enumerate(recomendaciones):
-            self.table.setItem(i, 0, QTableWidgetItem(text[0]))
-            self.table.setItem(i, 1, QTableWidgetItem(text[1]))
+            pred = text[1]
+            format_float = "{:.2f}".format(pred)
+            info = str(format_float)
+            self.tabla.setItem(i, 0, QTableWidgetItem(text[0]))
+            self.tabla.setItem(i, 1, QTableWidgetItem(info))
 
 #Método main de la aplicación
 if __name__ == '__main__':
