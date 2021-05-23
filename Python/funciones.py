@@ -75,8 +75,8 @@ def cosine_similarity(adj,mov1,mov2):
     if (ajustada.empty):
         pass
     else:
-        ajustada.replace(0,1e-12)
-        scoreDistance = cosine(ajustada[mov1], ajustada[mov2])
+        ajustada.replace(0,1e-8)
+        scoreDistance = 1 - cosine(ajustada[mov1], ajustada[mov2])
     return scoreDistance
 
 #Funcion que devuelve el rate
@@ -198,7 +198,10 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
     prediciones = []
     no_valoradas = no_valoradas_por(userId)
     no_valoradas.sort()
+    print(umbral)
     if (umbral != None):
+        print('Entramos')
+        
         for no_valorada in no_valoradas:
             ajustada = matriz_ajustada(ratings)
             subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
@@ -219,10 +222,11 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
                 print('Id no valorada: ' , no_valorada)
                 print('Prediccion: ' , pred)
                 prediciones.append((no_valorada, pred))
-            else:
-                print('Para la ' + str(no_valorada) + ' no se ha encontrado ninguna similitud')
+            '''else:
+                print('Para la ' + str(no_valorada) + ' no se ha encontrado ninguna similitud')'''
             print('------')
     if(vecinos != None):
+        print(vecinos)
         for no_valorada in no_valoradas:
             ajustada = matriz_ajustada(ratings)
             subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
@@ -236,16 +240,19 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
                 if (distancia != None):
                     finales_vecinos.append((valorada, distancia))
             finales_vecinos.sort(reverse = True, key= lambda x: x[1])
+            finales_vecino  = []
             if (vecinos < len(finales_vecinos)):
-                for i in (len(finales_vecinos)-1, vecinos):
-                    del finales_vecinos[i]
-            for final_ in finales_vecinos:
+                for i in (0, vecinos):
+                   finales_vecino.append(finales_vecinos[i])
+            else:
+                finales_vecino = finales_vecinos
+            for final_ in finales_vecino:
                 valorar = final_[0]
-                distancia = final_[1]
+                dista = final_[1]
                 scoreB = consultarBBDD(userId, valorar)
-                numerador  = distancia * scoreB
+                numerador  = dista * scoreB
                 sumatorioenumerador = sumatorioenumerador + numerador
-                sumatoriodenominador = sumatoriodenominador + distancia
+                sumatoriodenominador = sumatoriodenominador + dista
             if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
                 pred = sumatorioenumerador / sumatoriodenominador
                 print('Id no valorada: ' , no_valorada)
@@ -256,14 +263,16 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
     print('LLEGUE')
     final = []
     prediciones.sort(reverse = True, key= lambda x: x[1])
-    for i in range (0, numero_ranking):
-        no_val = prediciones[i][0]
-        predic = prediciones[i][1]
-        titulo = consultarTitulo(no_val)
-        print('Id no valorada: ' , no_val)
-        print('Prediccion: ' , predic)
-        final.append((titulo, predic))
+    if (int(numero_ranking) < (len(prediciones)-1)):
+        for i in range (0, int(numero_ranking)):
+            no_val = prediciones[i][0]
+            predic = prediciones[i][1]
+            titulo = consultarTitulo(no_val)
+            print('Id no valorada: ' , no_val)
+            print('Prediccion: ' , predic)
+            final.append((titulo, predic))
 
     return final
 
-#predecir_recomendacion(1,3,0.90, None)
+#predecir_recomendacion(1,2,None, 1)
+

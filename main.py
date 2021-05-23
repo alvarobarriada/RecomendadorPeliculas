@@ -1,6 +1,7 @@
 # Imports
 from Python import funciones, audio
 from PyQt5 import QtWidgets, uic
+from PyQt5.Qt import QTableWidgetItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 import os
@@ -22,6 +23,7 @@ class MyWindow(QtWidgets.QMainWindow):
 
         #Iniciamos la primera ventana
         uic.loadUi('Interface/main.ui',self)
+        
         self.estrella.setHidden(True)
         self.estrella.setHidden(True)
         self.estrella_2.setHidden(True)
@@ -40,37 +42,52 @@ class MyWindow(QtWidgets.QMainWindow):
         # Recogemos valores de userId y número de elementos a mostrar
         userId = self.userarriba.toPlainText()
         numero = self.items.toPlainText()
-
+        if numero == '':
+            numero = RANKING_DEFAULT
         # Recomendación con número de vecinos
         if self.radioPatio.isChecked():
+            audio.musica_ascensor(True)
+
             print("Has elegido número de vecinos")
             self.error_radio.setHidden(True)
             
-            if self.vecinos.toPlainText() != 5:
-                vecinos = self.vecinos.toPlainText()
+            if int(self.vecinos.toPlainText()) != 5:
+                vecinos = int(self.vecinos.toPlainText())
             else:
                 vecinos = RANKING_DEFAULT
 
             # Si recomendamos con vecinos, umbral es None
-            recomendacion = funciones.predecir_recomendacion(userId, numero, None, vecinos)
-            audio.musica_ascensor
-
+            recomendacion = funciones.predecir_recomendacion(int(userId), int(numero), None, int(vecinos))
+            
+            if (len(recomendacion)-1 != 0 ):
             # Mostramos valores en la tabla
-            print(recomendacion[0])
+                self.resultadosTabla(int(numero), recomendacion)
+                audio.musica_ascensor(False)
+            else:
+                self.pie.setText('No se han encontrado recomendaciones para las condiciones indicas.')
+                self.pie.setHidden(False)
+                
         
         # Recomendación con umbral de similitud
         elif self.radioUmbral.isChecked():
+            audio.musica_ascensor(True)
+
             print("Has elegido umbral de similitud")
             self.error_radio.setHidden(True)
 
             umbral = self.umbral.toPlainText()
 
             # Si recomendamos con umbral, vecinos es None
-            recomendacion = funciones.predecir_recomendacion(userId, numero, umbral, None)
-            audio.musica_ascensor
-
+            recomendacion = funciones.predecir_recomendacion(int(userId), int(numero), float(umbral), None)
+            
             # Mostramos valores en la tabla
-
+            if (len(recomendacion)-1 != 0 ):
+                # Mostramos valores en la tabla
+                self.resultadosTabla(int(numero), recomendacion)
+                audio.musica_ascensor(False)
+            else:
+                self.pie.setText('No se han encontrado recomendaciones para las condiciones indicas.')
+                self.pie.setHidden(False)
         # Prevención de errores    
         else:
             print("Por favor, seleccione una de las opcionesSeleccione una opción")
@@ -82,7 +99,6 @@ class MyWindow(QtWidgets.QMainWindow):
         pixmap = QPixmap(path)
         self.img_pelicula.setPixmap(pixmap)
         
-    
     def predecir(self):
         self.estrella.setHidden(True)
         self.estrella.setHidden(True)
@@ -160,7 +176,19 @@ class MyWindow(QtWidgets.QMainWindow):
             pixmap = QPixmap(path_error)
             self.img_pelicula.setPixmap(pixmap)
             
+    def resultadosTabla(self, numero, recomendaciones):
+        # para ocupar toda la tabla
+        self.tabla.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         
+        # resetear tabla
+        self.tabla.setRowCount(0)
+
+        self.tabla.setRowCount(numero)
+        self.tabla.setColumnCount(2)
+        for i, text in enumerate(recomendaciones):
+            self.table.setItem(i, 0, QTableWidgetItem(text[0]))
+            self.table.setItem(i, 1, QTableWidgetItem(text[1]))
+
 #Método main de la aplicación
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

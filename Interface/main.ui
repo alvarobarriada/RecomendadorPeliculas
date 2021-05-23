@@ -92,19 +92,6 @@ color:black;</string>
      <string>Recomendaciones para ti</string>
     </property>
    </widget>
-   <widget class="QTableView" name="tabla">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>370</y>
-      <width>341</width>
-      <height>291</height>
-     </rect>
-    </property>
-    <property name="alternatingRowColors">
-     <bool>false</bool>
-    </property>
-   </widget>
    <widget class="QLabel" name="seleccionaUserPred">
     <property name="geometry">
      <rect>
@@ -620,6 +607,16 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="text">
      <string>Seleccione una de las opciones e introduzca un valor.</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tabla">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>360</y>
+      <width>371</width>
+      <height>291</height>
+     </rect>
     </property>
    </widget>
   </widget>

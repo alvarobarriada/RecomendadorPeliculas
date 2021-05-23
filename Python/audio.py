@@ -1,16 +1,13 @@
-import vlc
+
+from pygame import mixer
 import time
-
-# Reproduce una pista de música para amenizar la espera durante la ejecución
-def musica_ascensor():
-    instance = vlc.Instance()
-    player = instance.media_player_new()
-    media = instance.media_new('../Database/musica.mp3')
-    player.set_media(media)
-    player.play()
-
-    timeout = time.time() + 120   # Dos minutos de música 
-    while True:
-        if time.time() > timeout:
-            player.stop()
+def musica_ascensor(a):
+    mixer.init()
+    mixer.music.load(r'Database/musica.mp3')
+    mixer.music.set_volume(1.0)
+    mixer.music.play(loops = -1)
+    if (a == True):
+        time.sleep(5)
+    else: 
+        mixer.music.stop()
 
