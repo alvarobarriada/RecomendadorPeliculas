@@ -40,8 +40,7 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def recomendar(self):
         # resetear tabla
-        self.tabla.setRowCount(0)
-        
+        self.tabla.setRowCount(0)   
         # Recogemos valores de userId y número de elementos a mostrar
         userId = self.userarriba.toPlainText()
         numero = self.items.toPlainText()
@@ -49,11 +48,9 @@ class MyWindow(QtWidgets.QMainWindow):
             numero = RANKING_DEFAULT
         # Recomendación con número de vecinos
         if self.radioPatio.isChecked():
+            #Se inicia la musica de espera
             audio.musica_ascensor(True)
-
-            print("Has elegido número de vecinos")
             self.error_radio.setHidden(True)
-            
             if int(self.vecinos.toPlainText()) != 5:
                 vecinos = int(self.vecinos.toPlainText())
             else:
@@ -62,9 +59,10 @@ class MyWindow(QtWidgets.QMainWindow):
             # Si recomendamos con vecinos, umbral es None
             recomendacion = funciones.predecir_recomendacion(int(userId), int(numero), None, int(vecinos))
             
-            if (len(recomendacion)-1 != 0 ):
+            if (len(recomendacion) != 0 ):
             # Mostramos valores en la tabla
                 self.resultadosTabla(int(numero), recomendacion)
+                #Se para la musica de espera
                 audio.musica_ascensor(False)
             else:
                 self.pie.setText('No se han encontrado recomendaciones para las condiciones indicas.')
@@ -73,6 +71,7 @@ class MyWindow(QtWidgets.QMainWindow):
         
         # Recomendación con umbral de similitud
         elif self.radioUmbral.isChecked():
+            #Se inicia la musica de espera
             audio.musica_ascensor(True)
 
             print("Has elegido umbral de similitud")
@@ -84,7 +83,7 @@ class MyWindow(QtWidgets.QMainWindow):
             recomendacion = funciones.predecir_recomendacion(int(userId), int(numero), float(umbral), None)
             
             # Mostramos valores en la tabla
-            if (len(recomendacion)-1 != 0 ):
+            if (len(recomendacion) != 0 ):
                 # Mostramos valores en la tabla
                 self.resultadosTabla(int(numero), recomendacion)
                 audio.musica_ascensor(False)
@@ -96,13 +95,14 @@ class MyWindow(QtWidgets.QMainWindow):
             print("Por favor, seleccione una de las opcionesSeleccione una opción")
             self.error_radio.setHidden(False)
 
-
+    #Funcion que añade la caratula de la pelicula
     def insertar_foto(self, movieId):
         path = 'Database/img/' + str(movieId) + '.jpg'
         pixmap = QPixmap(path)
         self.img_pelicula.setPixmap(pixmap)
         
     def predecir(self):
+        #Se esconden las estrellas para mostrarlas segun la prediccion
         self.estrella.setHidden(True)
         self.estrella.setHidden(True)
         self.estrella_2.setHidden(True)
@@ -111,6 +111,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.estrella_5.setHidden(True)
         usuario = self.userabajo.toPlainText()
         pel = self.pelicula.toPlainText()
+        #Se sacan los parentesis ya que daba error a la hora de la consulta sql
         peli = pel.replace('(', '')
         pelicula = peli.replace(')', '')
         pred = funciones.prediccion(pelicula, int(usuario))
@@ -127,13 +128,14 @@ class MyWindow(QtWidgets.QMainWindow):
             else:
                 funciones.download_image(movieId)
                 self.insertar_foto(movieId)
-                
+            #Segun esta implementado devuelve esto si ya la ha valorado
             if (pred == 1e-8):
                 info = 'Ya la ha valorado'
                 self.prediccion_2.setAlignment(Qt.AlignCenter)
                 self.prediccion_2.setText(info)
 
             else:
+                #Se van poniendo visibles las estrellas segun el valor entero prediccion
                 stars = int(pred)
                 format_float = "{:.2f}".format(pred)
                 info = str(format_float)
@@ -178,7 +180,8 @@ class MyWindow(QtWidgets.QMainWindow):
             path_error = 'Database/img/error.png'
             pixmap = QPixmap(path_error)
             self.img_pelicula.setPixmap(pixmap)
-            
+    
+    #Funcion que rellena la tabla de la interfaz
     def resultadosTabla(self, numero, recomendaciones):
         # para ocupar toda la tabla
         self.tabla.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
@@ -186,12 +189,15 @@ class MyWindow(QtWidgets.QMainWindow):
         # resetear tabla
         self.tabla.setRowCount(0)
 
-        self.tabla.setRowCount(numero)
+        self.tabla.setRowCount(int(numero))
         self.tabla.setColumnCount(2)
+        #Se recorren las recomendaciones
         for i, text in enumerate(recomendaciones):
+            #Se formatea la prediccion para que solo tenga dos decimales
             pred = text[1]
             format_float = "{:.2f}".format(pred)
             info = str(format_float)
+            #Se insertan en la tabla
             self.tabla.setItem(i, 0, QTableWidgetItem(text[0]))
             self.tabla.setItem(i, 1, QTableWidgetItem(info))
 
