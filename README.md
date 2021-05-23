@@ -1,8 +1,8 @@
 # RecomendadorPeliculas
 ## Práctica 2 de Sistemas Inteligentes - Recomendador de Películas
 
-### Álvaro Álvarez-Barriada Azaustre
-### Sofía Martínez Parada
+##### _Álvaro Álvarez-Barriada Azaustre_
+##### _Sofía Martínez Parada_
 
 Para crear la BBDD ejecutar el archivo que se sitúa en el directorio _**Database/database.py**_
 
