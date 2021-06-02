@@ -223,6 +223,22 @@ def no_valoradas_por (userId):
     no_valoradas = np.setdiff1d(valoradas, user)
     return no_valoradas
 
+def valoradas_bien (user,valoradas):
+    media = 0
+    valoradas_bien = []
+    for va in valoradas:
+        rate = consultarBBDD(user, va)
+        media = media + rate
+    media = media/len(valoradas)
+
+    for val in valoradas:
+        rat = consultarBBDD(user, val)
+        if (rat >= media):
+            valoradas_bien.append(val)
+    
+    return valoradas_bien
+
+
 #Recomendacion, si no hay un valor, poner None
 def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
     prediciones = []
@@ -237,10 +253,11 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
                 ajustada = matriz_ajustada(ratings)
                 subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
                 valoradas = subsetDataFrame1.get('movieId').tolist()
+                valorada_bien = valoradas_bien(userId, valoradas)
                 sumatorioenumerador = 0
                 sumatoriodenominador = 0
                 ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
-                for valorada in valoradas:
+                for valorada in valorada_bien:
                     distancia = cosine_similarity(ajustada, no_valorada, valorada)
                     if (distancia != None):
                         #Si la distancia es mayor o igual al umbral introducido
@@ -306,4 +323,5 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
 
     return final
 
+predecir_recomendacion(1, 5 , 0.8, None)
 
