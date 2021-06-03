@@ -1,4 +1,9 @@
 #Librerias
+from importlib.util import source_from_cache
+from operator import ifloordiv
+from telnetlib import theNULL
+from time import sleep
+import time
 from bs4 import BeautifulSoup
 from fuzzywuzzy import fuzz
 import numpy as np
@@ -7,6 +12,10 @@ import requests
 from scipy.spatial.distance import cosine
 import sqlite3
 
+from concurrent.futures import wait, ALL_COMPLETED
+import concurrent.futures
+import multiprocessing as mp
+import threading
 
 #Variables globales
 # Conexión con la base de datos SQLite
@@ -73,20 +82,23 @@ def fuzzy(movie_selected, verbose = True):
 
 def cosine_similarity(adj,mov1,mov2):
     scoreDistance = None
-    #se genera un nuevo dataframe formado por las columnas de los movieId a comparar
-    para_coseno = pd.concat([adj[mov1], adj[mov2]], axis=1, keys=[mov1, mov2])
-    #se borran las filas que tengan al menos un NaN
-    ajustada = para_coseno.dropna(how = 'any', axis = 'rows')
-    #Si no queda nada despues de dropna se devuelve no
-    if (ajustada.empty):
-        pass
-    else:
-        #Se cambian los 0s por 1e-8 para evitar denominadores a 0
-        ajustada.replace(0,1e-8)
-        #Usando el coseno de la libreria spicy.spatial.distance
-        scoreDistance = cosine(ajustada[mov1], ajustada[mov2])
-    return scoreDistance
-
+    try:
+        #se genera un nuevo dataframe formado por las columnas de los movieId a comparar
+        para_coseno = pd.concat([adj[mov1], adj[mov2]], axis=1, keys=[mov1, mov2])
+        #se borran las filas que tengan al menos un NaN
+        ajustada = para_coseno.dropna(how = 'any', axis = 'rows')
+        #Si no queda nada despues de dropna se devuelve no
+        if (ajustada.empty):
+            pass
+        else:
+            #Se cambian los 0s por 1e-8 para evitar denominadores a 0
+            ajustada.replace(0,1e-8)
+            #Usando el coseno de la libreria spicy.spatial.distance
+            scoreDistance = cosine(ajustada[mov1], ajustada[mov2])
+        return scoreDistance
+    except:
+        return scoreDistance
+       
 #Funcion que devuelve el rate de una movie de un usuario
 def consultarBBDD(userId, movieId):
     connection = sqlite3.connect(r'Database/Movielens.db')
@@ -238,9 +250,89 @@ def valoradas_bien (user,valoradas):
     
     return valoradas_bien
 
+#predicciones variable global
+predicciones_global = []
 
+#funcion para la prediccion de la valoracion de una pelicula segun el usuario escogido
+def predict(movieId, userId, umbral):
+    global predicciones_global
+    pred = None
+    
+    ajustada = matriz_ajustada(ratings)
+    #En un nuevo dataframe se guardan las filas que tengan el userId que se esta analizando
+    subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
+    #Se guarda en un array los movieId que estan en el nuevo dataframe
+    valoradas = subsetDataFrame1.get('movieId').tolist()
+    #Se comprueba que la pelicula que se analiza no este ya valorada
+    subsetDataFrame2 = subsetDataFrame1[subsetDataFrame1['movieId'] == movieId]
+    #Variables para el calculo de la prediccion
+    sumatorioenumerador = 0
+    sumatoriodenominador = 0
+    #Pivot nos sirve para generar una matriz como las de los apuntes, con las filas como userId
+    #y las columnas con los movieId, y los elementos de esta las valoraciones ajustadas
+    ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
+    #Si no esta valorada
+    if (subsetDataFrame2.empty):
+        #se recorren las valoradas
+        for valorada in valoradas:
+            #Calculamos la similitud
+            distancia = cosine_similarity(ajustada, movieId, valorada)
+            if (distancia != None):
+                if (distancia >= umbral):
+                #Obtenemos el rate del userId y la peli que toque
+                    scoreB = consultarBBDD(userId, valorada)
+                    numerador  = distancia * scoreB
+                    #Realizamos los sumatorios
+                    sumatorioenumerador = sumatorioenumerador + numerador
+                    sumatoriodenominador = sumatoriodenominador + distancia
+        #Comprobacion por si nunca encontro una similitud, para evitar divisiones entre 0
+        if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
+            pred = sumatorioenumerador / sumatoriodenominador
+    #Si ya la ha valorado
+    if pred != None:
+        predicciones_global.append((movieId, pred))
+        tuple = (movieId, pred)
+        return tuple
+    else:
+        return None
+
+#global tuplas
+tuplas_global = []
+
+def funcion_hilos(no_valoradas, userId, umbral, results):
+    
+    arrayUserId = [userId] * int(len(no_valoradas)/8)
+    arrayumbral = [umbral] * int(len(no_valoradas)/8)
+    with concurrent.futures.ThreadPoolExecutor(max_workers = 8) as executor:
+        resultss = executor.map(predict, no_valoradas, arrayUserId, arrayumbral)
+        for result in resultss:
+            try:
+                if result != None:
+                    # without this conversion to a list, the timeout error is not raised
+                    results.append(result)
+            except:
+                print("F")
+    
+    '''bucle = int(len(no_valoradas)/8)
+    for a in range(0,bucle):
+        anda  = 8*a
+        hilos = []
+        for i in range(0, 8):
+            index = (anda+i)            
+            thread = threading.Thread(target=predict(no_valoradas[index], userId, umbral))
+            hilos.append(thread)
+             # Start the threads (i.e. calculate the random number lists)
+        for j in hilos:
+            j.start()
+
+        # Ensure all of the threads have finished
+        for j in hilos:
+            j.join()'''
+ 
+        
 #Recomendacion, si no hay un valor, poner None
 def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
+    t = time.time()
     prediciones = []
     no_valoradas = no_valoradas_por(userId)
     no_valoradas.sort()
@@ -248,33 +340,37 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
     contador = 0
     #Si especifica el umbral
     if (umbral != None):
-        for no_valorada in no_valoradas:
-            if contador < int(numero_ranking):
-                ajustada = matriz_ajustada(ratings)
-                subsetDataFrame1 = ajustada[ajustada['userId'] == userId]
-                valoradas = subsetDataFrame1.get('movieId').tolist()
-                valorada_bien = valoradas_bien(userId, valoradas)
-                sumatorioenumerador = 0
-                sumatoriodenominador = 0
-                ajustada = ajustada.pivot( index= 'userId', columns='movieId', values='rating_adjusted').fillna(np.NaN)
-                for valorada in valorada_bien:
-                    distancia = cosine_similarity(ajustada, no_valorada, valorada)
-                    if (distancia != None):
-                        #Si la distancia es mayor o igual al umbral introducido
-                        if (distancia >= umbral):
-                            scoreB = consultarBBDD(userId, valorada)
-                            numerador  = distancia * scoreB
-                            sumatorioenumerador = sumatorioenumerador + numerador
-                            sumatoriodenominador = sumatoriodenominador + distancia
-                if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
-                    pred = sumatorioenumerador / sumatoriodenominador
-                    print('Id no valorada: ' , no_valorada)
-                    print('Prediccion: ' , pred)
-                    prediciones.append((no_valorada, pred))
-                    if(pred == 5.0):
-                        contador += 1
+        mp.set_start_method('fork', force=True)
+        manager = mp.Manager()
+        results = manager.list()
+        
+        chunk0 = int(len(no_valoradas)/4)
+        array0 = no_valoradas[0:chunk0]
+        chunk1= chunk0 + chunk0
+        array1 = no_valoradas[chunk0:chunk1]
+        chunk2 = chunk1 + chunk0
+        array2 = no_valoradas[chunk1:chunk2]
+        #chunk3 = chunk2 + chunk0
+        #array3 = no_valoradas[chunk2:chunk3]
+        array3 = no_valoradas[chunk2:len(no_valoradas)]
+        processes = []
+        processes.append(mp.Process(target = funcion_hilos, args = (array0, userId, umbral, results)))
+        processes.append(mp.Process(target = funcion_hilos, args = (array1, userId, umbral, results)))
+        processes.append(mp.Process(target = funcion_hilos, args = (array2, userId, umbral, results)))
+        processes.append(mp.Process(target = funcion_hilos, args = (array3, userId, umbral, results)))
+
+        for process in processes:
+            process.start()
+        for process in processes:
+            process.join()
+            print('acabo un proceso')
+    
+        global tuplas_global
+        prediciones = list(results)
+        print('LLEGUE')
     #si especifica los vecinos      
     if(vecinos != None):
+
         for no_valorada in no_valoradas:
             if contador < int(numero_ranking):
                 ajustada = matriz_ajustada(ratings)
@@ -309,6 +405,7 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
                     prediciones.append((no_valorada, pred))
                     if(pred == 5.0):
                         contador += 1
+    print("Me llevó " + str(time.time() - t))
     print('--------RANKING----------')
     final = []
     prediciones.sort(reverse = True, key= lambda x: x[1])
@@ -322,6 +419,7 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
             final.append((titulo, predic))
 
     return final
+
 
 predecir_recomendacion(1, 5 , 0.8, None)
 
