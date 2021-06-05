@@ -312,23 +312,7 @@ def funcion_hilos(no_valoradas, userId, umbral, results):
                     results.append(result)
             except:
                 print("F")
-    
-    '''bucle = int(len(no_valoradas)/8)
-    for a in range(0,bucle):
-        anda  = 8*a
-        hilos = []
-        for i in range(0, 8):
-            index = (anda+i)            
-            thread = threading.Thread(target=predict(no_valoradas[index], userId, umbral))
-            hilos.append(thread)
-             # Start the threads (i.e. calculate the random number lists)
-        for j in hilos:
-            j.start()
 
-        # Ensure all of the threads have finished
-        for j in hilos:
-            j.join()'''
- 
         
 #Recomendacion, si no hay un valor, poner None
 def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
@@ -363,11 +347,11 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
             process.start()
         for process in processes:
             process.join()
-            print('acabo un proceso')
+            #print('acabo un proceso')
     
         global tuplas_global
         prediciones = list(results)
-        print('LLEGUE')
+        #print('LLEGUE')
     #si especifica los vecinos      
     if(vecinos != None):
 
@@ -400,13 +384,13 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
                     sumatoriodenominador = sumatoriodenominador + dista
                 if (sumatorioenumerador != 0 and sumatoriodenominador != 0):
                     pred = sumatorioenumerador / sumatoriodenominador
-                    print('Id no valorada: ' , no_valorada)
-                    print('Prediccion: ' , pred)
+                    #print('Id no valorada: ' , no_valorada)
+                    #print('Prediccion: ' , pred)
                     prediciones.append((no_valorada, pred))
                     if(pred == 5.0):
                         contador += 1
-    print("Me llevó " + str(time.time() - t))
-    print('--------RANKING----------')
+    #print("Me llevó " + str(time.time() - t))
+    #print('--------RANKING----------')
     final = []
     prediciones.sort(reverse = True, key= lambda x: x[1])
     if (int(numero_ranking) < (len(prediciones)-1)):
@@ -414,12 +398,12 @@ def predecir_recomendacion(userId, numero_ranking , umbral, vecinos):
             no_val = prediciones[i][0]
             predic = prediciones[i][1]
             titulo = consultarTitulo(no_val)
-            print('Id no valorada: ' , no_val)
-            print('Prediccion: ' , predic)
+            #print('Id no valorada: ' , no_val)
+            #print('Prediccion: ' , predic)
             final.append((titulo, predic))
 
     return final
 
 
-predecir_recomendacion(1, 5 , 0.8, None)
+#predecir_recomendacion(2, 5 , 0.8, None)
 
